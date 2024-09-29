@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'medication_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -11,6 +12,13 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   int _selectedIndex = 0;
+
+  final List<Widget> _screens = [
+    const Center(child: Text('')),
+    const Center(child: Text('Calendar ')),
+    const MedicationScreen(),
+    const Center(child: Text('Profile')),
+  ];
 
   void _onItemTapped(int index) {
     setState(() {
@@ -30,9 +38,7 @@ class _HomeScreenState extends State<HomeScreen> {
           width: 40,
         )),
       ),
-      body: Center(
-        child: Text('Selected Index: $_selectedIndex'),
-      ),
+      body: _screens[_selectedIndex],
       bottomNavigationBar: BottomNavigationBar(
         backgroundColor: Colors.white,
         selectedItemColor: Colors.black87,
