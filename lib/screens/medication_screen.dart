@@ -52,24 +52,49 @@ class _MedicationScreenState extends State<MedicationScreen> {
         itemCount: _medications.length,
         itemBuilder: (context, index) {
           final medication = _medications[index];
-          return ListTile(
-            title: Text(medication.name),
-            trailing: IconButton(
-              icon: const Icon(Icons.edit),
-              onPressed: () async {
-                final updatedMedication = await Navigator.push<Medication>(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) =>
-                        AddMedicationScreen(medication: medication),
-                  ),
-                );
-                if (updatedMedication != null) {
-                  _editMedication(index, updatedMedication);
-                }
-              },
+          return Dismissible(
+            key: ValueKey(medication), // Unique key for the Dismissible
+            background: Container(
+              color: Colors.red,
+              alignment: Alignment.centerRight,
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: const Icon(
+                Icons.delete,
+                color: Colors.white,
+              ),
             ),
-            onTap: () {}, // Implement additional functionality if needed
+            direction: DismissDirection.endToStart,
+            onDismissed: (direction) {
+              // Remove the item from the list
+              setState(() {
+                _medications.removeAt(index);
+              });
+              // Show a snackbar to inform the user
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('${medication.name} deleted'),
+                ),
+              );
+            },
+            child: ListTile(
+              title: Text(medication.name),
+              trailing: IconButton(
+                icon: const Icon(Icons.edit),
+                onPressed: () async {
+                  final updatedMedication = await Navigator.push<Medication>(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) =>
+                          AddMedicationScreen(medication: medication),
+                    ),
+                  );
+                  if (updatedMedication != null) {
+                    _editMedication(index, updatedMedication);
+                  }
+                },
+              ),
+              onTap: () {}, // Implement additional functionality if needed
+            ),
           );
         },
       ),
