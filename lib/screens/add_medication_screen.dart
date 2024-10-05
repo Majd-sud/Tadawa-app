@@ -42,20 +42,49 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
     }
   }
 
-  void _presentDatePicker() async {
+  void _presentDatePicker(String dateType) async {
     final now = DateTime.now();
-    final firstDate = DateTime(now.year - 1, now.month, now.day);
-    final pickedDate = await showDatePicker(
-      context: context,
-      initialDate: now,
-      firstDate: firstDate,
-      lastDate: now,
-    );
-    setState(() {
-      _startDate = pickedDate;
-      _endDate = pickedDate;
-      _expirationDate = pickedDate;
-    });
+    DateTime? pickedDate;
+
+    if (dateType == 'start') {
+      // Allow past dates for start date
+      pickedDate = await showDatePicker(
+        context: context,
+        initialDate: _startDate ?? now,
+        firstDate: DateTime(now.year - 1),
+        lastDate: now, // End date can't be in the future
+      );
+    } else if (dateType == 'end') {
+      // Allow future dates for end date
+      pickedDate = await showDatePicker(
+        context: context,
+        initialDate: _endDate ?? now,
+        firstDate: _startDate ??
+            now, // End date should be after or equal to start date
+        lastDate: DateTime(now.year + 5), // Future dates allowed for end date
+      );
+    } else if (dateType == 'expiration') {
+      // Allow future dates for expiration date
+      pickedDate = await showDatePicker(
+        context: context,
+        initialDate: _expirationDate ?? now,
+        firstDate: now, // Expiration date should not be in the past
+        lastDate:
+            DateTime(now.year + 10), // Allow far future dates for expiration
+      );
+    }
+
+    if (pickedDate != null) {
+      setState(() {
+        if (dateType == 'start') {
+          _startDate = pickedDate;
+        } else if (dateType == 'end') {
+          _endDate = pickedDate;
+        } else if (dateType == 'expiration') {
+          _expirationDate = pickedDate;
+        }
+      });
+    }
   }
 
   void _presentTimePicker() async {
@@ -135,14 +164,17 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
           child: Column(
             children: [
               _buildTextField(_nameController, 'Medication Name'),
-              _buildDateRow('Start Date', _startDate, _presentDatePicker),
-              _buildDateRow('End Date', _endDate, _presentDatePicker),
+              _buildDateRow(
+                  'Start Date', _startDate, () => _presentDatePicker('start')),
+              _buildDateRow(
+                  'End Date', _endDate, () => _presentDatePicker('end')),
               _buildTimeRow(),
               SizedBox(height: 20),
               _buildScheduleButtons(),
               SizedBox(height: 20),
               _buildPillCountPicker(),
-              _buildDateRow('Expiration Date', _expirationDate, _presentDatePicker),
+              _buildDateRow('Expiration Date', _expirationDate,
+                  () => _presentDatePicker('expiration')),
               _buildTextField(_notesController, 'Notes'),
               const SizedBox(height: 20),
               ElevatedButton(
@@ -214,21 +246,27 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
           onPressed: () => _selectSchedule('Daily'),
           child: Text('Daily'),
           style: ElevatedButton.styleFrom(
-            backgroundColor: _selectedSchedule == 'Daily' ? Colors.blue : Colors.grey, // Use backgroundColor
+            backgroundColor: _selectedSchedule == 'Daily'
+                ? Colors.blue
+                : Colors.grey, // Use backgroundColor
           ),
         ),
         ElevatedButton(
           onPressed: () => _selectSchedule('Weekly'),
           child: Text('Weekly'),
           style: ElevatedButton.styleFrom(
-            backgroundColor: _selectedSchedule == 'Weekly' ? Colors.blue : Colors.grey, // Use backgroundColor
+            backgroundColor: _selectedSchedule == 'Weekly'
+                ? Colors.blue
+                : Colors.grey, // Use backgroundColor
           ),
         ),
         ElevatedButton(
           onPressed: () => _selectSchedule('Monthly'),
           child: Text('Monthly'),
           style: ElevatedButton.styleFrom(
-            backgroundColor: _selectedSchedule == 'Monthly' ? Colors.blue : Colors.grey, // Use backgroundColor
+            backgroundColor: _selectedSchedule == 'Monthly'
+                ? Colors.blue
+                : Colors.grey, // Use backgroundColor
           ),
         ),
       ],
