@@ -3,24 +3,25 @@ import 'package:tadawa_app/models/medication.dart';
 import 'package:tadawa_app/screens/add_medication_screen.dart';
 
 class MedicationScreen extends StatefulWidget {
-  const MedicationScreen({super.key});
+  final List<Medication> medications;
+
+  const MedicationScreen({super.key , required this.medications});
 
   @override
   _MedicationScreenState createState() => _MedicationScreenState();
 }
 
 class _MedicationScreenState extends State<MedicationScreen> {
-  final List<Medication> _medications = [];
 
   void _addMedication(Medication medication) {
     setState(() {
-      _medications.add(medication);
+      widget.medications.add(medication);
     });
   }
 
   void _editMedication(int index, Medication medication) {
     setState(() {
-      _medications[index] = medication;
+      widget.medications[index] = medication;
     });
   }
 
@@ -49,9 +50,9 @@ class _MedicationScreenState extends State<MedicationScreen> {
       ),
       body: ListView.builder(
         padding: const EdgeInsets.all(16.0),
-        itemCount: _medications.length,
+        itemCount: widget.medications.length,
         itemBuilder: (context, index) {
-          final medication = _medications[index];
+          final medication = widget.medications[index];
           return Dismissible(
             key: ValueKey(medication), // Unique key for the Dismissible
             background: Container(
@@ -65,11 +66,9 @@ class _MedicationScreenState extends State<MedicationScreen> {
             ),
             direction: DismissDirection.endToStart,
             onDismissed: (direction) {
-              // Remove the item from the list
               setState(() {
-                _medications.removeAt(index);
+                widget.medications.removeAt(index);
               });
-              // Show a snackbar to inform the user
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: Text('${medication.name} deleted'),

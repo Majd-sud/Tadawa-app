@@ -15,6 +15,7 @@ class Medication {
     required this.expirationDate,
     required this.pillsCount,
     required this.notes,
+    this.isTaken = false,
   }) : id = uuid.v4();
 
   final String id;
@@ -26,6 +27,7 @@ class Medication {
   final DateTime expirationDate;
   final int pillsCount;
   final String notes;
+  bool isTaken;
 
   String get formattedStartDate {
     return formatter.format(startDate);

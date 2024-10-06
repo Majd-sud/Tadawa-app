@@ -1,24 +1,33 @@
 import 'package:flutter/material.dart';
 import 'medication_screen.dart';
+import 'package:tadawa_app/screens/main_screen.dart';
+import 'package:tadawa_app/models/medication.dart';
 
-class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+class SwitchScreen extends StatefulWidget {
+  final List<Medication> medications;
+  const SwitchScreen({super.key , required this.medications});
 
   @override
-  State<HomeScreen> createState() {
-    return _HomeScreenState();
+  State<SwitchScreen> createState() {
+    return _SwitchScreenState();
   }
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _SwitchScreenState extends State<SwitchScreen> {
   int _selectedIndex = 0;
 
-  final List<Widget> _screens = [
-    const Center(child: Text('')),
-    const Center(child: Text('Calendar ')),
-    const MedicationScreen(),
-    const Center(child: Text('Profile')),
-  ];
+  late List<Widget> _screens;
+  
+  void initState() {
+    super.initState();
+    _screens = [
+      MainScreen(medications: widget.medications),
+      const Center(child: Text('Calendar')),
+      MedicationScreen(medications: widget.medications),
+      const Center(child: Text('Profile')),
+    ];
+  }
+
 
   void _onItemTapped(int index) {
     setState(() {
