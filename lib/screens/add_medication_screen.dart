@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:tadawa_app/models/medication.dart';
-import 'package:intl/intl.dart'; // Import for date formatting
+import 'package:intl/intl.dart'; 
+import 'package:tadawa_app/widgets/medication_image.dart';
 
 class AddMedicationScreen extends StatefulWidget {
   final Medication? medication;
@@ -47,12 +48,11 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
     DateTime? pickedDate;
 
     if (dateType == 'start') {
-      // Allow past dates for start date
       pickedDate = await showDatePicker(
         context: context,
         initialDate: _startDate ?? now,
         firstDate: DateTime(now.year - 1),
-        lastDate: now, // End date can't be in the future
+        lastDate: DateTime(now.year + 5), 
       );
     } else if (dateType == 'end') {
       // Allow future dates for end date
@@ -164,6 +164,7 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
           child: Column(
             children: [
               _buildTextField(_nameController, 'Medication Name'),
+              ImageInput(),
               _buildDateRow(
                   'Start Date', _startDate, () => _presentDatePicker('start')),
               _buildDateRow(

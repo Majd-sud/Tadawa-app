@@ -93,7 +93,7 @@ class _MedicationScreenState extends State<MedicationScreen> {
                   }
                 },
               ),
-              onTap: () {}, // Implement additional functionality if needed
+              onTap: () {}, 
             ),
           );
         },
