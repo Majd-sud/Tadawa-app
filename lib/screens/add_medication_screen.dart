@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart'; // Add this import
 import 'package:tadawa_app/models/medication.dart';
 import 'package:intl/intl.dart';
 import 'package:tadawa_app/widgets/medication_image.dart';
@@ -278,28 +279,40 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
     );
   }
 
-  Widget _buildPillCountPicker() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        IconButton(
-          icon: Icon(Icons.remove),
-          onPressed: () => _updatePillsCount(-1),
+ Widget _buildPillCountPicker() {
+  return Row(
+    mainAxisAlignment: MainAxisAlignment.center,
+    children: [
+      IconButton(
+        icon: const Icon(Icons.remove),
+        onPressed: () => _updatePillsCount(-1),
+      ),
+      Container(
+        width: 50,
+        child: TextField(
+          controller: _pillsController,
+          decoration: const InputDecoration(labelText: 'Pills'),
+          textAlign: TextAlign.center,
+          keyboardType: TextInputType.number, // Allow only number input
+          inputFormatters: <TextInputFormatter>[
+            FilteringTextInputFormatter.digitsOnly, // Ensure only digits are entered
+          ],
+          onChanged: (value) {
+            // Update pillsCount based on user input
+            if (value.isEmpty) {
+              _pillsCount = 1; // Default to 1 if input is empty
+            } else {
+              _pillsCount = int.tryParse(value) ?? 1; // Parse the value safely
+            }
+            _pillsController.text = _pillsCount.toString(); // Update the TextField
+          },
         ),
-        Container(
-          width: 50,
-          child: TextField(
-            controller: _pillsController,
-            decoration: const InputDecoration(labelText: 'Pills'),
-            textAlign: TextAlign.center,
-            readOnly: true,
-          ),
-        ),
-        IconButton(
-          icon: Icon(Icons.add),
-          onPressed: () => _updatePillsCount(1),
-        ),
-      ],
-    );
-  }
+      ),
+      IconButton(
+        icon: const Icon(Icons.add),
+        onPressed: () => _updatePillsCount(1),
+      ),
+    ],
+  );
+}
 }
