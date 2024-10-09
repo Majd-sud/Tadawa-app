@@ -25,7 +25,7 @@ class _MedicationImageState extends State<MedicationImage> {
   void initState() {
     super.initState();
     if (widget.initialImagePath != null) {
-      _selectedImage = File(widget.initialImagePath!); // Load existing image
+      _selectedImage = File(widget.initialImagePath!); 
     }
   }
 

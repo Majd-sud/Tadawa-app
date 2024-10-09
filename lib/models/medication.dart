@@ -17,8 +17,9 @@ class Medication {
     required this.notes,
     required this.photoUrl,
     required this.frequency,
-    this.isTaken = false,
-  }) : id = uuid.v4();
+    Map<DateTime, bool>? takenStatus,
+  })  : id = uuid.v4(),
+        takenStatus = takenStatus ?? {};
 
   final String id;
   final String name;
@@ -31,7 +32,7 @@ class Medication {
   final String notes;
   final String photoUrl;
   final String frequency;
-  bool isTaken;
+  final Map<DateTime, bool> takenStatus;
 
   String get formattedStartDate {
     return formatter.format(startDate);

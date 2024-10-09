@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart'; // Add this import
+import 'package:flutter/services.dart';
 import 'package:tadawa_app/models/medication.dart';
 import 'package:intl/intl.dart';
 import 'package:tadawa_app/widgets/medication_image.dart';
@@ -27,7 +27,6 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
   TimeOfDay? _time;
   int _pillsCount = 1;
   String? _selectedSchedule;
-  String? _photoUrl;
 
   @override
   void initState() {
@@ -42,7 +41,6 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
       _time = widget.medication!.time;
       _pillsCount = widget.medication!.pillsCount;
       _pillsController.text = _pillsCount.toString();
-      _photoUrl = widget.medication!.photoUrl;
       _selectedSchedule = widget.medication!.frequency;
     }
   }
@@ -122,7 +120,7 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
       notes: _notesController.text,
       pillsCount: _pillsCount,
       time: _time!,
-      photoUrl: _photoUrl!,
+      photoUrl: '',
       frequency: _selectedSchedule ?? 'Daily',
     );
 
@@ -133,23 +131,6 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
     setState(() {
       _selectedSchedule = schedule;
     });
-  }
-
-  void _updatePillsCount(int change) {
-    setState(() {
-      _pillsCount += change;
-      if (_pillsCount < 1) _pillsCount = 1;
-      _pillsController.text = _pillsCount.toString();
-    });
-  }
-
-  @override
-  void dispose() {
-    _nameController.dispose();
-    _scheduleController.dispose();
-    _notesController.dispose();
-    _pillsController.dispose();
-    super.dispose();
   }
 
   @override
@@ -167,20 +148,18 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
               _buildTextField(_nameController, 'Medication Name'),
               MedicationImage(
                 onImageSelected: (imagePath) {
-                  setState(() {
-                    _photoUrl = imagePath;
-                  });
+                  setState(() {});
                 },
-                initialImagePath: _photoUrl,
+                initialImagePath: null,
               ),
               _buildDateRow(
                   'Start Date', _startDate, () => _presentDatePicker('start')),
               _buildDateRow(
                   'End Date', _endDate, () => _presentDatePicker('end')),
               _buildTimeRow(),
-              SizedBox(height: 20),
-              _buildScheduleButtons(), // Ensure this reflects the selected frequency
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
+              _buildScheduleButtons(),
+              const SizedBox(height: 20),
               _buildPillCountPicker(),
               _buildDateRow('Expiration Date', _expirationDate,
                   () => _presentDatePicker('expiration')),
@@ -188,10 +167,11 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
               const SizedBox(height: 20),
               ElevatedButton(
                 onPressed: _saveMedication,
-                child: const Text('Save Medication'),
                 style: ElevatedButton.styleFrom(
-                  padding: EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
                 ),
+                child: const Text('Save Medication'),
               ),
             ],
           ),
@@ -208,8 +188,8 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
         maxLength: 50,
         decoration: InputDecoration(
           labelText: label,
-          border: OutlineInputBorder(),
-          contentPadding: EdgeInsets.all(10),
+          border: const OutlineInputBorder(),
+          contentPadding: const EdgeInsets.all(10),
         ),
       ),
     );
@@ -221,7 +201,7 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
       children: [
         Text(
           date == null ? label : DateFormat.yMMMd().format(date),
-          style: TextStyle(fontSize: 16),
+          style: const TextStyle(fontSize: 16),
         ),
         IconButton(
           onPressed: onPressed,
@@ -237,7 +217,7 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
       children: [
         Text(
           _time == null ? 'Start Time' : _time!.format(context),
-          style: TextStyle(fontSize: 16),
+          style: const TextStyle(fontSize: 16),
         ),
         IconButton(
           onPressed: _presentTimePicker,
@@ -253,66 +233,69 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
       children: [
         ElevatedButton(
           onPressed: () => _selectSchedule('Daily'),
-          child: Text('Daily'),
           style: ElevatedButton.styleFrom(
             backgroundColor:
                 _selectedSchedule == 'Daily' ? Colors.blue : Colors.grey,
           ),
+          child: const Text('Daily'),
         ),
         ElevatedButton(
           onPressed: () => _selectSchedule('Weekly'),
-          child: Text('Weekly'),
           style: ElevatedButton.styleFrom(
             backgroundColor:
                 _selectedSchedule == 'Weekly' ? Colors.blue : Colors.grey,
           ),
+          child: const Text('Weekly'),
         ),
         ElevatedButton(
           onPressed: () => _selectSchedule('Monthly'),
-          child: Text('Monthly'),
           style: ElevatedButton.styleFrom(
             backgroundColor:
                 _selectedSchedule == 'Monthly' ? Colors.blue : Colors.grey,
           ),
+          child: const Text('Monthly'),
         ),
       ],
     );
   }
 
- Widget _buildPillCountPicker() {
-  return Row(
-    mainAxisAlignment: MainAxisAlignment.center,
-    children: [
-      IconButton(
-        icon: const Icon(Icons.remove),
-        onPressed: () => _updatePillsCount(-1),
-      ),
-      Container(
-        width: 50,
-        child: TextField(
-          controller: _pillsController,
-          decoration: const InputDecoration(labelText: 'Pills'),
-          textAlign: TextAlign.center,
-          keyboardType: TextInputType.number, // Allow only number input
-          inputFormatters: <TextInputFormatter>[
-            FilteringTextInputFormatter.digitsOnly, // Ensure only digits are entered
-          ],
-          onChanged: (value) {
-            // Update pillsCount based on user input
-            if (value.isEmpty) {
-              _pillsCount = 1; // Default to 1 if input is empty
-            } else {
-              _pillsCount = int.tryParse(value) ?? 1; // Parse the value safely
-            }
-            _pillsController.text = _pillsCount.toString(); // Update the TextField
+  Widget _buildPillCountPicker() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        IconButton(
+          icon: const Icon(Icons.remove),
+          onPressed: () {
+            setState(() {
+              if (_pillsCount > 1) _pillsCount--;
+              _pillsController.text = _pillsCount.toString();
+            });
           },
         ),
-      ),
-      IconButton(
-        icon: const Icon(Icons.add),
-        onPressed: () => _updatePillsCount(1),
-      ),
-    ],
-  );
-}
+        SizedBox(
+          width: 50,
+          child: TextField(
+            controller: _pillsController,
+            decoration: const InputDecoration(labelText: 'Pills'),
+            textAlign: TextAlign.center,
+            keyboardType: TextInputType.number,
+            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+            onChanged: (value) {
+              _pillsCount = int.tryParse(value) ?? 1;
+              _pillsController.text = _pillsCount.toString();
+            },
+          ),
+        ),
+        IconButton(
+          icon: const Icon(Icons.add),
+          onPressed: () {
+            setState(() {
+              _pillsCount++;
+              _pillsController.text = _pillsCount.toString();
+            });
+          },
+        ),
+      ],
+    );
+  }
 }

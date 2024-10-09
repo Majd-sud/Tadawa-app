@@ -5,14 +5,13 @@ import 'package:tadawa_app/screens/add_medication_screen.dart';
 class MedicationScreen extends StatefulWidget {
   final List<Medication> medications;
 
-  const MedicationScreen({super.key , required this.medications});
+  const MedicationScreen({super.key, required this.medications});
 
   @override
   _MedicationScreenState createState() => _MedicationScreenState();
 }
 
 class _MedicationScreenState extends State<MedicationScreen> {
-
   void _addMedication(Medication medication) {
     setState(() {
       widget.medications.add(medication);
@@ -54,7 +53,7 @@ class _MedicationScreenState extends State<MedicationScreen> {
         itemBuilder: (context, index) {
           final medication = widget.medications[index];
           return Dismissible(
-            key: ValueKey(medication), // Unique key for the Dismissible
+            key: ValueKey(medication), 
             background: Container(
               color: Colors.red,
               alignment: Alignment.centerRight,
@@ -83,8 +82,7 @@ class _MedicationScreenState extends State<MedicationScreen> {
                   final updatedMedication = await Navigator.push<Medication>(
                     context,
                     MaterialPageRoute(
-                      builder: (context) =>
-                          AddMedicationScreen(medication: medication),
+                      builder: (context) => AddMedicationScreen(medication: medication),
                     ),
                   );
                   if (updatedMedication != null) {

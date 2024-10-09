@@ -18,6 +18,7 @@ class _SwitchScreenState extends State<SwitchScreen> {
 
   late List<Widget> _screens;
   
+  @override
   void initState() {
     super.initState();
     _screens = [
