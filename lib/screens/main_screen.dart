@@ -81,12 +81,6 @@ class _MainScreenState extends State<MainScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Medications Overview'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.add),
-            onPressed: _navigateToAddMedication,
-          ),
-        ],
       ),
       body: Column(
         children: [

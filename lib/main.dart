@@ -17,7 +17,9 @@ class MyApp extends StatelessWidget {
       theme: ThemeData().copyWith(
         colorScheme: ColorScheme.fromSeed(
             seedColor: const Color.fromARGB(255, 46, 161, 132)),
+            
       ),
+      
       home: SwitchScreen(medications: medications),
     );
   }

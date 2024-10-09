@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:tadawa_app/models/medication.dart';
 import 'package:tadawa_app/screens/add_medication_screen.dart';
+import 'package:intl/intl.dart'; // Import for date formatting
 
 class MedicationScreen extends StatefulWidget {
   final List<Medication> medications;
@@ -53,7 +54,7 @@ class _MedicationScreenState extends State<MedicationScreen> {
         itemBuilder: (context, index) {
           final medication = widget.medications[index];
           return Dismissible(
-            key: ValueKey(medication), 
+            key: ValueKey(medication),
             background: Container(
               color: Colors.red,
               alignment: Alignment.centerRight,
@@ -74,23 +75,51 @@ class _MedicationScreenState extends State<MedicationScreen> {
                 ),
               );
             },
-            child: ListTile(
-              title: Text(medication.name),
-              trailing: IconButton(
-                icon: const Icon(Icons.edit),
-                onPressed: () async {
-                  final updatedMedication = await Navigator.push<Medication>(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => AddMedicationScreen(medication: medication),
+            child: Card(
+              elevation: 2,
+              margin: const EdgeInsets.symmetric(vertical: 8.0),
+              child: ListTile(
+                contentPadding: const EdgeInsets.all(16.0),
+                title: Text(
+                  medication.name,
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                subtitle: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Start Date: ${DateFormat.yMMMd().format(medication.startDate)}',
+                      style: const TextStyle(fontSize: 14),
                     ),
-                  );
-                  if (updatedMedication != null) {
-                    _editMedication(index, updatedMedication);
-                  }
-                },
+                    Text(
+                      'End Date: ${DateFormat.yMMMd().format(medication.endDate)}',
+                      style: const TextStyle(fontSize: 14),
+                    ),
+                    Text(
+                      'Time: ${medication.time.format(context)}',
+                      style: const TextStyle(fontSize: 14),
+                    ),
+                  ],
+                ),
+                trailing: IconButton(
+                  icon: const Icon(Icons.edit),
+                  onPressed: () async {
+                    final updatedMedication = await Navigator.push<Medication>(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => AddMedicationScreen(medication: medication),
+                      ),
+                    );
+                    if (updatedMedication != null) {
+                      _editMedication(index, updatedMedication);
+                    }
+                  },
+                ),
+                onTap: () {}, 
               ),
-              onTap: () {}, 
             ),
           );
         },
