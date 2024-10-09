@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:tadawa_app/models/medication.dart';
-import 'package:intl/intl.dart'; 
+import 'package:intl/intl.dart';
 import 'package:tadawa_app/widgets/medication_image.dart';
 
 class AddMedicationScreen extends StatefulWidget {
@@ -26,6 +26,7 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
   TimeOfDay? _time;
   int _pillsCount = 1;
   String? _selectedSchedule;
+  String? _photoUrl;
 
   @override
   void initState() {
@@ -40,6 +41,8 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
       _time = widget.medication!.time;
       _pillsCount = widget.medication!.pillsCount;
       _pillsController.text = _pillsCount.toString();
+      _photoUrl = widget.medication!.photoUrl;
+      _selectedSchedule = widget.medication!.frequency;
     }
   }
 
@@ -52,25 +55,21 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
         context: context,
         initialDate: _startDate ?? now,
         firstDate: DateTime(now.year - 1),
-        lastDate: DateTime(now.year + 5), 
+        lastDate: DateTime(now.year + 5),
       );
     } else if (dateType == 'end') {
-      // Allow future dates for end date
       pickedDate = await showDatePicker(
         context: context,
         initialDate: _endDate ?? now,
-        firstDate: _startDate ??
-            now, // End date should be after or equal to start date
-        lastDate: DateTime(now.year + 5), // Future dates allowed for end date
+        firstDate: _startDate ?? now,
+        lastDate: DateTime(now.year + 5),
       );
     } else if (dateType == 'expiration') {
-      // Allow future dates for expiration date
       pickedDate = await showDatePicker(
         context: context,
         initialDate: _expirationDate ?? now,
-        firstDate: now, // Expiration date should not be in the past
-        lastDate:
-            DateTime(now.year + 10), // Allow far future dates for expiration
+        firstDate: now,
+        lastDate: DateTime(now.year + 10),
       );
     }
 
@@ -101,14 +100,12 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
   }
 
   void _saveMedication() {
-    // Validate inputs
     if (_nameController.text.isEmpty ||
         _startDate == null ||
         _endDate == null ||
         _expirationDate == null ||
         _time == null ||
         _selectedSchedule == null) {
-      // Show an error message
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Please fill in all fields.')),
       );
@@ -124,6 +121,8 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
       notes: _notesController.text,
       pillsCount: _pillsCount,
       time: _time!,
+      photoUrl: _photoUrl!,
+      frequency: _selectedSchedule ?? 'Daily',
     );
 
     Navigator.pop(context, medication);
@@ -138,8 +137,8 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
   void _updatePillsCount(int change) {
     setState(() {
       _pillsCount += change;
-      if (_pillsCount < 1) _pillsCount = 1; // Prevent negative counts
-      _pillsController.text = _pillsCount.toString(); // Update TextField
+      if (_pillsCount < 1) _pillsCount = 1;
+      _pillsController.text = _pillsCount.toString();
     });
   }
 
@@ -156,7 +155,8 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Add Medication'),
+        title: Text(
+            widget.medication != null ? 'Edit Medication' : 'Add Medication'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -164,14 +164,21 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
           child: Column(
             children: [
               _buildTextField(_nameController, 'Medication Name'),
-              ImageInput(),
+              MedicationImage(
+                onImageSelected: (imagePath) {
+                  setState(() {
+                    _photoUrl = imagePath;
+                  });
+                },
+                initialImagePath: _photoUrl,
+              ),
               _buildDateRow(
                   'Start Date', _startDate, () => _presentDatePicker('start')),
               _buildDateRow(
                   'End Date', _endDate, () => _presentDatePicker('end')),
               _buildTimeRow(),
               SizedBox(height: 20),
-              _buildScheduleButtons(),
+              _buildScheduleButtons(), // Ensure this reflects the selected frequency
               SizedBox(height: 20),
               _buildPillCountPicker(),
               _buildDateRow('Expiration Date', _expirationDate,
@@ -247,27 +254,24 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
           onPressed: () => _selectSchedule('Daily'),
           child: Text('Daily'),
           style: ElevatedButton.styleFrom(
-            backgroundColor: _selectedSchedule == 'Daily'
-                ? Colors.blue
-                : Colors.grey, // Use backgroundColor
+            backgroundColor:
+                _selectedSchedule == 'Daily' ? Colors.blue : Colors.grey,
           ),
         ),
         ElevatedButton(
           onPressed: () => _selectSchedule('Weekly'),
           child: Text('Weekly'),
           style: ElevatedButton.styleFrom(
-            backgroundColor: _selectedSchedule == 'Weekly'
-                ? Colors.blue
-                : Colors.grey, // Use backgroundColor
+            backgroundColor:
+                _selectedSchedule == 'Weekly' ? Colors.blue : Colors.grey,
           ),
         ),
         ElevatedButton(
           onPressed: () => _selectSchedule('Monthly'),
           child: Text('Monthly'),
           style: ElevatedButton.styleFrom(
-            backgroundColor: _selectedSchedule == 'Monthly'
-                ? Colors.blue
-                : Colors.grey, // Use backgroundColor
+            backgroundColor:
+                _selectedSchedule == 'Monthly' ? Colors.blue : Colors.grey,
           ),
         ),
       ],

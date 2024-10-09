@@ -1,19 +1,33 @@
 import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
-class ImageInput extends StatefulWidget {
-  const ImageInput({super.key});
+class MedicationImage extends StatefulWidget {
+  final Function(String) onImageSelected;
+  final String? initialImagePath;
+
+  const MedicationImage({
+    super.key,
+    required this.onImageSelected,
+    this.initialImagePath,
+  });
 
   @override
-  State<ImageInput> createState() {
-    return _ImageInputState();
+  State<MedicationImage> createState() {
+    return _MedicationImageState();
   }
 }
 
-class _ImageInputState extends State<ImageInput> {
+class _MedicationImageState extends State<MedicationImage> {
   File? _selectedImage;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.initialImagePath != null) {
+      _selectedImage = File(widget.initialImagePath!); // Load existing image
+    }
+  }
 
   void _takePicture() async {
     final imagePicker = ImagePicker();
@@ -27,6 +41,8 @@ class _ImageInputState extends State<ImageInput> {
     setState(() {
       _selectedImage = File(pickedImage.path);
     });
+
+    widget.onImageSelected(pickedImage.path);
   }
 
   @override
