@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:tadawa_app/screens/profile_screen.dart';
 import 'medication_screen.dart';
 import 'package:tadawa_app/screens/main_screen.dart';
 import 'package:tadawa_app/models/medication.dart';
+
 
 class SwitchScreen extends StatefulWidget {
   final List<Medication> medications;
@@ -25,7 +27,7 @@ class _SwitchScreenState extends State<SwitchScreen> {
       MainScreen(medications: widget.medications),
       const Center(child: Text('Calendar')),
       MedicationScreen(medications: widget.medications),
-      const Center(child: Text('Profile')),
+      ProfileScreen(),
     ];
   }
 

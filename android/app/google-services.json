@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "608420525478",
+    "project_id": "tadawa-application",
+    "storage_bucket": "tadawa-application.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:608420525478:android:bd9595076891e914270b67",
+        "android_client_info": {
+          "package_name": "com.example.tadawa_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAts6Jr2Jni5Hz2-wkwtBjRdO0yA87hKCE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
