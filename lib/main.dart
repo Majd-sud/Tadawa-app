@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:tadawa_app/screens/auth_screen.dart';
 import 'package:tadawa_app/screens/switch_screen.dart';
 import 'package:tadawa_app/models/medication.dart';
+import 'package:tadawa_app/models/appointment.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -20,20 +21,27 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final List<Medication> medications = [];
+    final List<Appointment> initialAppointments = [];
+
     return MaterialApp(
       title: 'Tadawa',
       theme: ThemeData().copyWith(
         colorScheme: ColorScheme.fromSeed(
-            seedColor: const Color.fromARGB(255, 46, 161, 132)),
+          seedColor: const Color.fromARGB(255, 46, 161, 132),
+        ),
       ),
       home: StreamBuilder(
-          stream: FirebaseAuth.instance.authStateChanges(),
-          builder: (ctx, snapshot) {
-            if (snapshot.hasData) {
-              return SwitchScreen(medications: medications);
-            }
-            return const AuthScreen();
-          }),
+        stream: FirebaseAuth.instance.authStateChanges(),
+        builder: (ctx, snapshot) {
+          if (snapshot.hasData) {
+            return SwitchScreen(
+              medications: medications,
+              initialAppointments: initialAppointments, 
+            );
+          }
+          return const AuthScreen();
+        },
+      ),
     );
   }
 }
