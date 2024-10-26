@@ -12,6 +12,7 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+
   runApp(const MyApp());
 }
 
@@ -30,14 +31,17 @@ class MyApp extends StatelessWidget {
           seedColor: const Color.fromARGB(255, 46, 161, 132),
         ),
       ),
-      home: StreamBuilder(
+      home: StreamBuilder<User?>(
         stream: FirebaseAuth.instance.authStateChanges(),
-        builder: (ctx, snapshot) {
-          if (snapshot.hasData) {
+        builder: (ctx, userSnapshot) {
+          if (userSnapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          if (userSnapshot.hasData) {
             return SwitchScreen(
               medications: medications,
-              initialAppointments: initialAppointments, 
-            );
+              initialAppointments: initialAppointments,
+            ); // Replace with your home screen
           }
           return const AuthScreen();
         },
