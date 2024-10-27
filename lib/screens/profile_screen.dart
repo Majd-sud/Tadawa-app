@@ -16,14 +16,7 @@ class ProfileScreen extends StatelessWidget {
         centerTitle: false,
         backgroundColor: Colors.transparent,
         elevation: 0,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.info_outline, color: Colors.black),
-            onPressed: () {
-              // Add action for info button
-            },
-          ),
-        ],
+      
       ),
       body: SingleChildScrollView(
         child: Column(
@@ -95,28 +88,8 @@ class ProfileScreen extends StatelessWidget {
                     // Add functionality for language setting
                   },
                 ),
-                ListTile(
-                  leading: CircleAvatar(
-                    backgroundColor: Colors.blue.withOpacity(0.1),
-                    child: const Icon(Icons.group, color: Colors.blue),
-                  ),
-                  title: const Text('Available users'),
-                  trailing: const Icon(Icons.chevron_right, color: Colors.grey),
-                  onTap: () {
-                    // Add functionality for available users
-                  },
-                ),
-                ListTile(
-                  leading: CircleAvatar(
-                    backgroundColor: Colors.green.withOpacity(0.1),
-                    child: const Icon(Icons.tune, color: Colors.green),
-                  ),
-                  title: const Text('Adjustment'),
-                  trailing: const Icon(Icons.chevron_right, color: Colors.grey),
-                  onTap: () {
-                    // Add functionality for adjustment setting
-                  },
-                ),
+              
+               
                 ListTile(
                   leading: CircleAvatar(
                     backgroundColor: Colors.red.withOpacity(0.1),
