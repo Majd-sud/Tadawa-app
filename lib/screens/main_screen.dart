@@ -2,36 +2,80 @@ import 'package:flutter/material.dart';
 import 'package:tadawa_app/models/medication.dart';
 import 'package:intl/intl.dart';
 import 'package:tadawa_app/screens/add_medication_screen.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class MainScreen extends StatefulWidget {
-  final List<Medication> medications;
-
-  const MainScreen({super.key, required this.medications});
+  const MainScreen({super.key});
 
   @override
   _MainScreenState createState() => _MainScreenState();
 }
 
 class _MainScreenState extends State<MainScreen> {
+  List<Medication> _medications = [];
   DateTime _selectedDate = DateTime.now();
 
+  @override
+  void initState() {
+    super.initState();
+    _fetchMedications();
+  }
+
+  Future<void> _fetchMedications() async {
+    final user = FirebaseAuth.instance.currentUser;
+
+    if (user != null) {
+      try {
+        // Fetch medications from the user's subcollection
+        final snapshot = await FirebaseFirestore.instance
+            .collection('users')
+            .doc(user.uid)
+            .collection('medications')
+            .get();
+
+        setState(() {
+          // Map the fetched documents to Medication objects
+          _medications = snapshot.docs
+              .map((doc) => Medication.fromFirestore(
+                  doc.data(), doc.id)) // Pass doc.id here
+              .toList();
+        });
+
+        // Log the number of documents fetched
+        print('Number of documents fetched: ${snapshot.docs.length}');
+        print(
+            'Fetched medications: ${_medications.map((m) => m.name).toList()}');
+      } catch (e) {
+        print('Error fetching medications: $e');
+      }
+    } else {
+      print('No user is currently logged in.');
+    }
+  }
+
   List<Medication> _getTodaysMedications(DateTime date) {
-    List<Medication> todaysMedications = widget.medications.where((medication) {
+    final dateOnly =
+        DateTime(date.year, date.month, date.day); // Normalize to midnight
+
+    return _medications.where((medication) {
       final reminderDates = _generateReminderDates(
         medication.startDate,
         medication.endDate,
         medication.frequency,
       );
 
-      final dateOnly = DateTime(date.year, date.month, date.day);
+      // Debugging: Log the medication details
+      print('Checking medication: ${medication.name}');
+      print('  Start Date: ${medication.startDate}');
+      print('  End Date: ${medication.endDate}');
+      print('  Frequency: ${medication.frequency}');
+      print('  Reminder Dates: $reminderDates');
+      print('  Selected Date: $dateOnly');
 
-      return reminderDates.any((reminderDate) =>
-          reminderDate.year == dateOnly.year &&
-          reminderDate.month == dateOnly.month &&
-          reminderDate.day == dateOnly.day);
+      return reminderDates
+          .any((reminderDate) => reminderDate.isAtSameMomentAs(dateOnly));
     }).toList();
-
-    return todaysMedications;
   }
 
   List<DateTime> _generateReminderDates(
@@ -40,22 +84,33 @@ class _MainScreenState extends State<MainScreen> {
     DateTime currentDate = start;
 
     while (currentDate.isBefore(end) || currentDate.isAtSameMomentAs(end)) {
-      reminderDates.add(currentDate);
-      if (frequency == 'Daily') {
-        currentDate = currentDate.add(const Duration(days: 1));
-      } else if (frequency == 'Weekly') {
-        currentDate = currentDate.add(const Duration(days: 7));
-      } else if (frequency == 'Monthly') {
-        int nextMonth = currentDate.month + 1;
-        int nextYear = currentDate.year;
-        if (nextMonth > 12) {
-          nextMonth = 1;
-          nextYear += 1;
-        }
-        currentDate = DateTime(nextYear, nextMonth, currentDate.day);
-        if (currentDate.day != currentDate.day) {
-          currentDate = DateTime(nextYear, nextMonth + 1, 0);
-        }
+      reminderDates.add(DateTime(currentDate.year, currentDate.month,
+          currentDate.day)); // Normalize to midnight
+
+      switch (frequency) {
+        case 'Daily':
+          currentDate = currentDate.add(const Duration(days: 1));
+          break;
+        case 'Weekly':
+          currentDate = currentDate.add(const Duration(days: 7));
+          break;
+        case 'Monthly':
+          int nextMonth = currentDate.month + 1;
+          int nextYear = currentDate.year;
+
+          if (nextMonth > 12) {
+            nextMonth = 1;
+            nextYear += 1;
+          }
+
+          currentDate = DateTime(nextYear, nextMonth, currentDate.day);
+          // Adjust for months with fewer days
+          if (currentDate.day > DateTime(nextYear, nextMonth + 1, 0).day) {
+            currentDate = DateTime(nextYear, nextMonth + 1, 0);
+          }
+          break;
+        default:
+          break;
       }
     }
     return reminderDates;
@@ -71,8 +126,9 @@ class _MainScreenState extends State<MainScreen> {
 
     if (medication != null) {
       setState(() {
-        widget.medications.add(medication);
+        _medications.add(medication);
       });
+      // Optionally, you could save the new medication to Firestore here
     }
   }
 
@@ -80,7 +136,7 @@ class _MainScreenState extends State<MainScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Medications Overview'),
+        title: const Text('Medications Overview')
       ),
       body: Column(
         children: [

@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:tadawa_app/models/medication.dart';
 import 'package:intl/intl.dart';
 import 'package:tadawa_app/widgets/medication_image.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 
 class AddMedicationScreen extends StatefulWidget {
   final Medication? medication;
@@ -22,7 +20,7 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
   final _nameController = TextEditingController();
   final _scheduleController = TextEditingController();
   final _notesController = TextEditingController();
-  final TextEditingController _pillsController = TextEditingController();
+  final _pillsController = TextEditingController();
 
   DateTime? _startDate;
   DateTime? _endDate;
@@ -123,29 +121,46 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
       notes: _notesController.text,
       pillsCount: _pillsCount,
       time: _time!,
-      photoUrl: '',
       frequency: _selectedSchedule ?? 'Daily',
     );
-    
 
-   final user = FirebaseAuth.instance.currentUser;
+    final user = FirebaseAuth.instance.currentUser;
     if (user != null) {
-      await FirebaseFirestore.instance
-          .collection('users')
-          .doc(user.uid)
-          .collection('medications')
-          .add({
-        'name': medication.name,
-        'startDate': medication.startDate,
-        'endDate': medication.endDate,
-        'expirationDate': medication.expirationDate,
-        'notes': medication.notes,
-        'pillsCount': medication.pillsCount,
-        'time': medication.time.format(context),
-        'frequency': medication.frequency,
-      });
+      if (widget.medication == null) {
+        // Adding a new medication
+        await FirebaseFirestore.instance
+            .collection('users')
+            .doc(user.uid)
+            .collection('medications')
+            .add({
+          'name': medication.name,
+          'startDate': medication.startDate,
+          'endDate': medication.endDate,
+          'expirationDate': medication.expirationDate,
+          'notes': medication.notes,
+          'pillsCount': medication.pillsCount,
+          'time': medication.time.format(context), // Ensure this is in the correct format
+          'frequency': medication.frequency,
+        });
+      } else {
+        // Updating existing medication
+        await FirebaseFirestore.instance
+            .collection('users')
+            .doc(user.uid)
+            .collection('medications')
+            .doc(widget.medication!.id) // Ensure you have an ID for the medication
+            .update({
+          'name': medication.name,
+          'startDate': medication.startDate,
+          'endDate': medication.endDate,
+          'expirationDate': medication.expirationDate,
+          'notes': medication.notes,
+          'pillsCount': medication.pillsCount,
+          'time': medication.time.format(context),
+          'frequency': medication.frequency,
+        });
+      }
     }
-
 
     Navigator.pop(context, medication);
   }
@@ -257,24 +272,27 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
         ElevatedButton(
           onPressed: () => _selectSchedule('Daily'),
           style: ElevatedButton.styleFrom(
-            backgroundColor:
-                _selectedSchedule == 'Daily' ? Colors.blue : Colors.grey,
+            backgroundColor: _selectedSchedule == 'Daily'
+                ? Colors.blue
+                : Colors.grey,
           ),
           child: const Text('Daily'),
         ),
         ElevatedButton(
           onPressed: () => _selectSchedule('Weekly'),
           style: ElevatedButton.styleFrom(
-            backgroundColor:
-                _selectedSchedule == 'Weekly' ? Colors.blue : Colors.grey,
+            backgroundColor: _selectedSchedule == 'Weekly'
+                ? Colors.blue
+                : Colors.grey,
           ),
           child: const Text('Weekly'),
         ),
         ElevatedButton(
           onPressed: () => _selectSchedule('Monthly'),
           style: ElevatedButton.styleFrom(
-            backgroundColor:
-                _selectedSchedule == 'Monthly' ? Colors.blue : Colors.grey,
+            backgroundColor: _selectedSchedule == 'Monthly'
+                ? Colors.blue
+                : Colors.grey,
           ),
           child: const Text('Monthly'),
         ),
@@ -284,39 +302,33 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
 
   Widget _buildPillCountPicker() {
     return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        IconButton(
-          icon: const Icon(Icons.remove),
-          onPressed: () {
-            setState(() {
-              if (_pillsCount > 1) _pillsCount--;
-              _pillsController.text = _pillsCount.toString();
-            });
-          },
+        Text(
+          'Pills Count: $_pillsCount',
+          style: const TextStyle(fontSize: 16),
         ),
-        SizedBox(
-          width: 50,
-          child: TextField(
-            controller: _pillsController,
-            decoration: const InputDecoration(labelText: 'Pills'),
-            textAlign: TextAlign.center,
-            keyboardType: TextInputType.number,
-            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-            onChanged: (value) {
-              _pillsCount = int.tryParse(value) ?? 1;
-              _pillsController.text = _pillsCount.toString();
-            },
-          ),
-        ),
-        IconButton(
-          icon: const Icon(Icons.add),
-          onPressed: () {
-            setState(() {
-              _pillsCount++;
-              _pillsController.text = _pillsCount.toString();
-            });
-          },
+        Row(
+          children: [
+            IconButton(
+              icon: const Icon(Icons.remove),
+              onPressed: () {
+                if (_pillsCount > 1) {
+                  setState(() {
+                    _pillsCount--;
+                  });
+                }
+              },
+            ),
+            IconButton(
+              icon: const Icon(Icons.add),
+              onPressed: () {
+                setState(() {
+                  _pillsCount++;
+                });
+              },
+            ),
+          ],
         ),
       ],
     );

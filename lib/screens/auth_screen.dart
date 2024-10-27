@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:tadawa_app/screens/profile_screen.dart';
 import 'dart:io';
 import 'package:tadawa_app/widgets/profile_image.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -21,6 +20,7 @@ class AuthScreen extends StatefulWidget {
 class _AuthScreenState extends State<AuthScreen> {
   final _form = GlobalKey<FormState>();
 
+  var _isLogin = true;
   var _enteredUsername = '';
   var _enteredFirstName = '';
   var _enteredLastName = '';
@@ -28,8 +28,8 @@ class _AuthScreenState extends State<AuthScreen> {
   var _enteredEmail = '';
   var _enteredPassword = '';
   var _enteredConfirmPassword = '';
-  var _isLogin = true;
   File? _selectedImage;
+  var _isAuthenticating = false;
 
   void _submit() async {
     final isValid = _form.currentState!.validate();
@@ -38,14 +38,16 @@ class _AuthScreenState extends State<AuthScreen> {
       return;
     }
 
+    _form.currentState!.save();
+
     try {
+      setState(() {
+        _isAuthenticating = true;
+      });
       if (_isLogin) {
-        await _firebase.signInWithEmailAndPassword(
+        final userCredential = await _firebase.signInWithEmailAndPassword(
           email: _enteredEmail,
           password: _enteredPassword,
-        );
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Login successful!')),
         );
       } else {
         final userCredential = await _firebase.createUserWithEmailAndPassword(
@@ -57,9 +59,8 @@ class _AuthScreenState extends State<AuthScreen> {
             .ref()
             .child('user_images')
             .child('${userCredential.user!.uid}.jpg');
-
         await storageRef.putFile(_selectedImage!);
-        final imageUrl = await storageRef.getDownloadURL();
+        var imageUrl = await storageRef.getDownloadURL();
 
         await _firestore.collection('users').doc(userCredential.user!.uid).set({
           'username': _enteredUsername,
@@ -67,21 +68,16 @@ class _AuthScreenState extends State<AuthScreen> {
           'lastName': _enteredLastName,
           'phone': _enteredPhone,
           'email': _enteredEmail,
-          'image_url':imageUrl
+          'image_url': imageUrl,
         });
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Registration successful!')),
-        );
       }
-      // Navigate to ProfileScreen after successful login or registration
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const ProfileScreen()),
-      );
-    } on FirebaseAuthException catch (e) {
+    } on FirebaseAuthException catch (error) {
+      if (error.code == 'email-already-in-use') {}
+      ScaffoldMessenger.of(context).clearSnackBars();
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.message ?? 'Authentication failed')),
+        SnackBar(
+          content: Text(error.message ?? 'Authentication failed.'),
+        ),
       );
     }
   }

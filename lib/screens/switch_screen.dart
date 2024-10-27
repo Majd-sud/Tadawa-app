@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:tadawa_app/screens/appointment_screen.dart';
-import 'package:tadawa_app/screens/profile_screen.dart';
+import 'package:tadawa_app/screens/settings_screen.dart';
 import 'package:tadawa_app/screens/main_screen.dart';
 import 'package:tadawa_app/screens/medication_screen.dart';
 import 'package:tadawa_app/models/medication.dart';
@@ -31,10 +31,10 @@ class _SwitchScreenState extends State<SwitchScreen> {
   void initState() {
     super.initState();
     _screens = [
-      MainScreen(medications: widget.medications),
+      MainScreen(),
       AppointmentScreen(initialAppointments: widget.initialAppointments),
-      MedicationScreen(medications: widget.medications),
-      const ProfileScreen(), 
+      MedicationScreen(),
+      const SettingsScreen(), 
     ];
   }
 
