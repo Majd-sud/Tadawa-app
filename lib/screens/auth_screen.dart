@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'profile_screen.dart'; // Import the ProfileScreen
+import 'package:tadawa_app/screens/profile_screen.dart';
 
 final _firebase = FirebaseAuth.instance;
 final _firestore = FirebaseFirestore.instance;
@@ -79,7 +79,7 @@ class _AuthScreenState extends State<AuthScreen> {
       appBar: AppBar(
         title: Text(_isLogin ? 'Login' : 'Register'),
       ),
-      body: Padding(
+      body: SingleChildScrollView(  // Wrap with SingleChildScrollView
         padding: const EdgeInsets.all(16.0),
         child: Form(
           key: _form,

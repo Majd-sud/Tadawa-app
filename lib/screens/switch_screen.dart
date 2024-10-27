@@ -34,7 +34,7 @@ class _SwitchScreenState extends State<SwitchScreen> {
       MainScreen(medications: widget.medications),
       AppointmentScreen(initialAppointments: widget.initialAppointments),
       MedicationScreen(medications: widget.medications),
-      const ProfileScreen(), // Assuming ProfileScreen has no parameters
+      const ProfileScreen(), 
     ];
   }
 
