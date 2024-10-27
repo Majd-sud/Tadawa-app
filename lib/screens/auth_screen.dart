@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:tadawa_app/screens/profile_screen.dart';
+import 'dart:io';
+import 'package:tadawa_app/widgets/profile_image.dart';
 
 final _firebase = FirebaseAuth.instance;
 final _firestore = FirebaseFirestore.instance;
@@ -26,6 +28,7 @@ class _AuthScreenState extends State<AuthScreen> {
   var _enteredPassword = '';
   var _enteredConfirmPassword = '';
   var _isLogin = true;
+  File? _selectedImage;
 
   void _submit() async {
     final isValid = _form.currentState!.validate();
@@ -79,12 +82,18 @@ class _AuthScreenState extends State<AuthScreen> {
       appBar: AppBar(
         title: Text(_isLogin ? 'Login' : 'Register'),
       ),
-      body: SingleChildScrollView(  // Wrap with SingleChildScrollView
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Form(
           key: _form,
           child: Column(
             children: [
+              if (!_isLogin)
+                ProfileImage(
+                  onPickImage: (pickedImage) {
+                    _selectedImage = pickedImage;
+                  },
+                ),
               if (!_isLogin)
                 TextFormField(
                   decoration: const InputDecoration(labelText: 'Username'),
