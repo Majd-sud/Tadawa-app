@@ -4,16 +4,16 @@ import 'package:tadawa_app/screens/profile_screen.dart';
 import 'package:tadawa_app/screens/main_screen.dart';
 import 'package:tadawa_app/screens/medication_screen.dart';
 import 'package:tadawa_app/models/medication.dart';
-import 'package:tadawa_app/models/appointment.dart'; 
+import 'package:tadawa_app/models/appointment.dart';
 
 class SwitchScreen extends StatefulWidget {
   final List<Medication> medications;
-  final List<Appointment> initialAppointments; 
+  final List<Appointment> initialAppointments;
 
   const SwitchScreen({
     super.key,
     required this.medications,
-    required this.initialAppointments, 
+    required this.initialAppointments,
   });
 
   @override
@@ -32,9 +32,9 @@ class _SwitchScreenState extends State<SwitchScreen> {
     super.initState();
     _screens = [
       MainScreen(medications: widget.medications),
-      AppointmentScreen(initialAppointments: widget.initialAppointments), 
+      AppointmentScreen(initialAppointments: widget.initialAppointments),
       MedicationScreen(medications: widget.medications),
-      ProfileScreen(),
+      const ProfileScreen(), // Assuming ProfileScreen has no parameters
     ];
   }
 
@@ -50,10 +50,13 @@ class _SwitchScreenState extends State<SwitchScreen> {
       appBar: AppBar(
         backgroundColor: const Color.fromARGB(255, 248, 248, 248),
         flexibleSpace: SafeArea(
-          child: Image.asset(
-            'assets/logos/logo2.PNG',
-            height: 40,
-            width: 40,
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Image.asset(
+              'assets/logos/logo2.PNG',
+              height: 40,
+              width: 40,
+            ),
           ),
         ),
       ),
