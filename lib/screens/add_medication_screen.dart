@@ -3,6 +3,9 @@ import 'package:flutter/services.dart';
 import 'package:tadawa_app/models/medication.dart';
 import 'package:intl/intl.dart';
 import 'package:tadawa_app/widgets/medication_image.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 
 class AddMedicationScreen extends StatefulWidget {
   final Medication? medication;
@@ -98,7 +101,7 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
     }
   }
 
-  void _saveMedication() {
+  void _saveMedication() async {
     if (_nameController.text.isEmpty ||
         _startDate == null ||
         _endDate == null ||
@@ -123,6 +126,26 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
       photoUrl: '',
       frequency: _selectedSchedule ?? 'Daily',
     );
+    
+
+   final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid)
+          .collection('medications')
+          .add({
+        'name': medication.name,
+        'startDate': medication.startDate,
+        'endDate': medication.endDate,
+        'expirationDate': medication.expirationDate,
+        'notes': medication.notes,
+        'pillsCount': medication.pillsCount,
+        'time': medication.time.format(context),
+        'frequency': medication.frequency,
+      });
+    }
+
 
     Navigator.pop(context, medication);
   }

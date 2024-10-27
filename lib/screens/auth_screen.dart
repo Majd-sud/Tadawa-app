@@ -67,7 +67,9 @@ class _AuthScreenState extends State<AuthScreen> {
           'lastName': _enteredLastName,
           'phone': _enteredPhone,
           'email': _enteredEmail,
+          'image_url':imageUrl
         });
+
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Registration successful!')),
         );
