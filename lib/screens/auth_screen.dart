@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:tadawa_app/screens/profile_screen.dart';
 import 'dart:io';
 import 'package:tadawa_app/widgets/profile_image.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 
 final _firebase = FirebaseAuth.instance;
 final _firestore = FirebaseFirestore.instance;
@@ -52,13 +53,20 @@ class _AuthScreenState extends State<AuthScreen> {
           password: _enteredPassword,
         );
 
+        final storageRef = FirebaseStorage.instance
+            .ref()
+            .child('user_images')
+            .child('${userCredential.user!.uid}.jpg');
+
+        await storageRef.putFile(_selectedImage!);
+        final imageUrl = await storageRef.getDownloadURL();
+
         await _firestore.collection('users').doc(userCredential.user!.uid).set({
           'username': _enteredUsername,
           'firstName': _enteredFirstName,
           'lastName': _enteredLastName,
           'phone': _enteredPhone,
           'email': _enteredEmail,
-          // Add other user information here
         });
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Registration successful!')),
