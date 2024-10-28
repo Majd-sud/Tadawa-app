@@ -45,7 +45,7 @@ class _AuthScreenState extends State<AuthScreen> {
         _isAuthenticating = true;
       });
       if (_isLogin) {
-        final userCredential = await _firebase.signInWithEmailAndPassword(
+        await _firebase.signInWithEmailAndPassword(
           email: _enteredEmail,
           password: _enteredPassword,
         );
@@ -55,30 +55,36 @@ class _AuthScreenState extends State<AuthScreen> {
           password: _enteredPassword,
         );
 
-        final storageRef = FirebaseStorage.instance
-            .ref()
-            .child('user_images')
-            .child('${userCredential.user!.uid}.jpg');
-        await storageRef.putFile(_selectedImage!);
-        var imageUrl = await storageRef.getDownloadURL();
+        // Upload image and store user data
+        if (_selectedImage != null) {
+          final storageRef = FirebaseStorage.instance
+              .ref()
+              .child('user_images')
+              .child('${userCredential.user!.uid}.jpg');
+          await storageRef.putFile(_selectedImage!);
+          var imageUrl = await storageRef.getDownloadURL();
 
-        await _firestore.collection('users').doc(userCredential.user!.uid).set({
-          'username': _enteredUsername,
-          'firstName': _enteredFirstName,
-          'lastName': _enteredLastName,
-          'phone': _enteredPhone,
-          'email': _enteredEmail,
-          'image_url': imageUrl,
-        });
+          await _firestore.collection('users').doc(userCredential.user!.uid).set({
+            'username': _enteredUsername,
+            'firstName': _enteredFirstName,
+            'lastName': _enteredLastName,
+            'phone': _enteredPhone,
+            'email': _enteredEmail,
+            'image_url': imageUrl,
+          });
+        }
       }
     } on FirebaseAuthException catch (error) {
-      if (error.code == 'email-already-in-use') {}
       ScaffoldMessenger.of(context).clearSnackBars();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(error.message ?? 'Authentication failed.'),
         ),
       );
+    } finally {
+      setState(() {
+        _isAuthenticating = false;
+      });
     }
   }
 
@@ -87,132 +93,176 @@ class _AuthScreenState extends State<AuthScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(_isLogin ? 'Login' : 'Register'),
+        centerTitle: true,
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
-        child: Form(
-          key: _form,
-          child: Column(
-            children: [
-              if (!_isLogin)
-                ProfileImage(
-                  onPickImage: (pickedImage) {
-                    _selectedImage = pickedImage;
-                  },
+        child: Column(
+          children: [
+            if (_isLogin) // Display logo only in login
+              Center(
+                child: Image.asset(
+                  'assets/logos/logo1.PNG',
+                  height: 150, // Increased size
+                  width: 150,
                 ),
-              if (!_isLogin)
-                TextFormField(
-                  decoration: const InputDecoration(labelText: 'Username'),
-                  onChanged: (value) {
-                    _enteredUsername = value;
-                  },
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter your username.';
-                    }
-                    return null;
-                  },
-                ),
-              if (!_isLogin)
-                TextFormField(
-                  decoration: const InputDecoration(labelText: 'First Name'),
-                  onChanged: (value) {
-                    _enteredFirstName = value;
-                  },
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter your first name.';
-                    }
-                    return null;
-                  },
-                ),
-              if (!_isLogin)
-                TextFormField(
-                  decoration: const InputDecoration(labelText: 'Last Name'),
-                  onChanged: (value) {
-                    _enteredLastName = value;
-                  },
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter your last name.';
-                    }
-                    return null;
-                  },
-                ),
-              if (!_isLogin)
-                TextFormField(
-                  decoration: const InputDecoration(labelText: 'Phone'),
-                  keyboardType: TextInputType.phone,
-                  onChanged: (value) {
-                    _enteredPhone = value;
-                  },
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter your phone number.';
-                    }
-                    return null;
-                  },
-                ),
-              TextFormField(
-                decoration: const InputDecoration(labelText: 'Email'),
-                keyboardType: TextInputType.emailAddress,
-                onChanged: (value) {
-                  _enteredEmail = value;
-                },
-                validator: (value) {
-                  if (value == null || value.isEmpty || !value.contains('@')) {
-                    return 'Please enter a valid email address.';
-                  }
-                  return null;
-                },
               ),
-              TextFormField(
-                decoration: const InputDecoration(labelText: 'Password'),
-                obscureText: true,
-                onChanged: (value) {
-                  _enteredPassword = value;
-                },
-                validator: (value) {
-                  if (value == null || value.isEmpty || value.length < 6) {
-                    return 'Password must be at least 6 characters long.';
-                  }
-                  return null;
-                },
+            const SizedBox(height: 20),
+            Form(
+              key: _form,
+              child: Column(
+                children: [
+                  if (!_isLogin)
+                    ProfileImage(
+                      onPickImage: (pickedImage) {
+                        _selectedImage = pickedImage;
+                      },
+                    ),
+                  if (!_isLogin)
+                    TextFormField(
+                      decoration: const InputDecoration(
+                        labelText: 'Username',
+                        border: OutlineInputBorder(),
+                      ),
+                      onChanged: (value) {
+                        _enteredUsername = value;
+                      },
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter your username.';
+                        }
+                        return null;
+                      },
+                    ),
+                  if (!_isLogin)
+                    TextFormField(
+                      decoration: const InputDecoration(
+                        labelText: 'First Name',
+                        border: OutlineInputBorder(),
+                      ),
+                      onChanged: (value) {
+                        _enteredFirstName = value;
+                      },
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter your first name.';
+                        }
+                        return null;
+                      },
+                    ),
+                  if (!_isLogin)
+                    TextFormField(
+                      decoration: const InputDecoration(
+                        labelText: 'Last Name',
+                        border: OutlineInputBorder(),
+                      ),
+                      onChanged: (value) {
+                        _enteredLastName = value;
+                      },
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter your last name.';
+                        }
+                        return null;
+                      },
+                    ),
+                  if (!_isLogin)
+                    TextFormField(
+                      decoration: const InputDecoration(
+                        labelText: 'Phone',
+                        border: OutlineInputBorder(),
+                      ),
+                      keyboardType: TextInputType.phone,
+                      onChanged: (value) {
+                        _enteredPhone = value;
+                      },
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter your phone number.';
+                        }
+                        return null;
+                      },
+                    ),
+                  TextFormField(
+                    decoration: const InputDecoration(
+                      labelText: 'Email',
+                      border: OutlineInputBorder(),
+                    ),
+                    keyboardType: TextInputType.emailAddress,
+                    onChanged: (value) {
+                      _enteredEmail = value;
+                    },
+                    validator: (value) {
+                      if (value == null || value.isEmpty || !value.contains('@')) {
+                        return 'Please enter a valid email address.';
+                      }
+                      return null;
+                    },
+                  ),
+                  TextFormField(
+                    decoration: const InputDecoration(
+                      labelText: 'Password',
+                      border: OutlineInputBorder(),
+                    ),
+                    obscureText: true,
+                    onChanged: (value) {
+                      _enteredPassword = value;
+                    },
+                    validator: (value) {
+                      if (value == null || value.isEmpty || value.length < 6) {
+                        return 'Password must be at least 6 characters long.';
+                      }
+                      return null;
+                    },
+                  ),
+                  if (!_isLogin)
+                    TextFormField(
+                      decoration: const InputDecoration(
+                          labelText: 'Confirm Password',
+                          border: OutlineInputBorder()),
+                      obscureText: true,
+                      onChanged: (value) {
+                        _enteredConfirmPassword = value;
+                      },
+                      validator: (value) {
+                        if (value == null ||
+                            value.isEmpty ||
+                            value != _enteredPassword) {
+                          return 'Passwords do not match.';
+                        }
+                        return null;
+                      },
+                    ),
+                  const SizedBox(height: 20),
+                  ElevatedButton(
+                    onPressed: _submit,
+                    child: Text(_isLogin ? 'Login' : 'Register'),
+                    style: ElevatedButton.styleFrom(
+                      minimumSize: Size(double.infinity, 50), // Full width
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(30),
+                      ),
+                      textStyle: const TextStyle(fontSize: 18),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  TextButton(
+                    onPressed: () {
+                      setState(() {
+                        _isLogin = !_isLogin;
+                      });
+                    },
+                    child: Text(
+                      _isLogin
+                          ? 'Create new account'
+                          : 'I already have an account',
+                      style: const TextStyle(fontSize: 16),
+                    ),
+                  ),
+                ],
               ),
-              if (!_isLogin)
-                TextFormField(
-                  decoration:
-                      const InputDecoration(labelText: 'Confirm Password'),
-                  obscureText: true,
-                  onChanged: (value) {
-                    _enteredConfirmPassword = value;
-                  },
-                  validator: (value) {
-                    if (value == null ||
-                        value.isEmpty ||
-                        value != _enteredPassword) {
-                      return 'Passwords do not match.';
-                    }
-                    return null;
-                  },
-                ),
-              const SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: _submit,
-                child: Text(_isLogin ? 'Login' : 'Register'),
-              ),
-              TextButton(
-                onPressed: () {
-                  setState(() {
-                    _isLogin = !_isLogin;
-                  });
-                },
-                child: Text(_isLogin
-                    ? 'Create new account'
-                    : 'I already have an account'),
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
