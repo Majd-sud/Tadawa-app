@@ -8,7 +8,7 @@ class SettingsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[200], // Softer background for a modern look
+      backgroundColor: Colors.grey[200],
       appBar: AppBar(
         title: const Text(
           'Settings',
@@ -33,8 +33,6 @@ class SettingsScreen extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const SizedBox(height: 20),
-
-                  // Account Section
                   _buildSectionHeader('Account'),
                   Card(
                     shape: RoundedRectangleBorder(
@@ -65,8 +63,6 @@ class SettingsScreen extends StatelessWidget {
                       onTap: () {},
                     ),
                   ),
-
-                  // General Section
                   _buildSectionHeader('General'),
                   _buildSettingsListTile(
                     icon: Icons.nightlight_round,
@@ -86,7 +82,6 @@ class SettingsScreen extends StatelessWidget {
               ),
             ),
           ),
-          // Logout Button
           Padding(
             padding: const EdgeInsets.all(16.0),
             child: _buildLogoutButton(context),
@@ -96,7 +91,6 @@ class SettingsScreen extends StatelessWidget {
     );
   }
 
-  // Helper to build a section header
   Widget _buildSectionHeader(String title) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 16.0),
@@ -111,7 +105,6 @@ class SettingsScreen extends StatelessWidget {
     );
   }
 
-  // Helper widget to create each setting tile with icon, title, subtitle
   Widget _buildSettingsListTile({
     required IconData icon,
     required String title,
@@ -149,7 +142,6 @@ class SettingsScreen extends StatelessWidget {
     );
   }
 
-  // Helper widget for the Logout button
   Widget _buildLogoutButton(BuildContext context) {
     return ElevatedButton.icon(
       onPressed: () async {
