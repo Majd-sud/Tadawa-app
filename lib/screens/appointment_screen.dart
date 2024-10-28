@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:table_calendar/table_calendar.dart';
-import 'package:tadawa_app/models/appointment.dart'; 
+import 'package:tadawa_app/models/appointment.dart';
 
 class AppointmentScreen extends StatefulWidget {
-  final List<Appointment> initialAppointments; 
-  const AppointmentScreen({super.key, required this.initialAppointments});
+  const AppointmentScreen({super.key});
 
   @override
   _AppointmentScreenState createState() => _AppointmentScreenState();
@@ -14,7 +15,6 @@ class _AppointmentScreenState extends State<AppointmentScreen> {
   late final ValueNotifier<List<Appointment>> _selectedAppointments;
   late DateTime _focusedDay;
   late DateTime _selectedDay;
-
   final Map<DateTime, List<Appointment>> _appointments = {};
 
   @override
@@ -22,18 +22,57 @@ class _AppointmentScreenState extends State<AppointmentScreen> {
     super.initState();
     _focusedDay = DateTime.now();
     _selectedDay = DateTime.now();
-    _selectedAppointments = ValueNotifier(_getAppointmentsForDay(_selectedDay));
+    _selectedAppointments = ValueNotifier<List<Appointment>>([]);
 
-    for (var appointment in widget.initialAppointments) {
-      if (_appointments[_selectedDay] == null) {
-        _appointments[_selectedDay] = [];
-      }
-      _appointments[_selectedDay]!.add(appointment);
+    // Fetch appointments from Firestore
+    _fetchAppointments();
+  }
+
+  void _fetchAppointments() {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid)
+          .collection('appointments')
+          .snapshots()
+          .listen((snapshot) {
+        _appointments.clear();
+        for (var doc in snapshot.docs) {
+          try {
+            var appointment = Appointment.fromFirestore(doc.data(), doc.id);
+            DateTime appointmentDate = DateTime(
+              appointment.date.year,
+              appointment.date.month,
+              appointment.date.day,
+            );
+
+            // Add appointment to the map
+            _appointments.putIfAbsent(appointmentDate, () => []).add(appointment);
+          } catch (e) {
+            print("Error parsing appointment: ${doc.data()} - $e");
+          }
+        }
+
+        // Update the selected appointments for the current selected day
+        _updateSelectedAppointments();
+        
+        // Update the calendar markers
+        setState(() {});
+      }, onError: (error) {
+        print("Error fetching appointments: $error");
+      });
+    } else {
+      print("No user is signed in.");
     }
   }
 
+  void _updateSelectedAppointments() {
+    _selectedAppointments.value = _getAppointmentsForDay(_selectedDay);
+  }
+
   List<Appointment> _getAppointmentsForDay(DateTime day) {
-    return _appointments[day] ?? [];
+    return _appointments[DateTime(day.year, day.month, day.day)] ?? [];
   }
 
   void _onDaySelected(DateTime selectedDay, DateTime focusedDay) {
@@ -41,14 +80,15 @@ class _AppointmentScreenState extends State<AppointmentScreen> {
       setState(() {
         _selectedDay = selectedDay;
         _focusedDay = focusedDay;
+        _updateSelectedAppointments();
       });
-      _selectedAppointments.value = _getAppointmentsForDay(selectedDay);
     }
   }
 
   void _addOrEditAppointment({Appointment? appointment}) async {
     String appointmentName = appointment?.title ?? '';
-    TimeOfDay? selectedTime = appointment?.time;
+    TimeOfDay selectedTime = appointment?.time ?? TimeOfDay.now();
+    DateTime selectedDate = appointment?.date ?? _selectedDay;
 
     await showDialog(
       context: context,
@@ -71,13 +111,13 @@ class _AppointmentScreenState extends State<AppointmentScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(selectedTime != null ? selectedTime!.format(context) : 'Select Time'),
+                      Text(selectedTime.format(context)),
                       IconButton(
                         icon: const Icon(Icons.access_time),
                         onPressed: () async {
                           final pickedTime = await showTimePicker(
                             context: context,
-                            initialTime: selectedTime ?? TimeOfDay.now(),
+                            initialTime: selectedTime,
                           );
                           if (pickedTime != null) {
                             setDialogState(() {
@@ -88,24 +128,44 @@ class _AppointmentScreenState extends State<AppointmentScreen> {
                       ),
                     ],
                   ),
+                  const SizedBox(height: 16),
+                  Text("Date: ${selectedDate.toLocal()}".split(' ')[0]),
+                  const SizedBox(height: 8),
+                  ElevatedButton(
+                    onPressed: () async {
+                      final pickedDate = await showDatePicker(
+                        context: context,
+                        initialDate: selectedDate,
+                        firstDate: DateTime.now(),
+                        lastDate: DateTime.utc(2030, 12, 31),
+                      );
+                      if (pickedDate != null) {
+                        setDialogState(() {
+                          selectedDate = pickedDate;
+                        });
+                      }
+                    },
+                    child: const Text("Select Date"),
+                  ),
                 ],
               ),
               actions: [
                 TextButton(
                   onPressed: () {
-                    if (appointmentName.isNotEmpty && selectedTime != null) {
-                      setState(() {
-                        if (appointment == null) {
-                          if (_appointments[_selectedDay] == null) {
-                            _appointments[_selectedDay] = [];
-                          }
-                          _appointments[_selectedDay]!.add(Appointment(appointmentName, selectedTime!));
-                        } else {
-                          final index = _appointments[_selectedDay]!.indexOf(appointment);
-                          _appointments[_selectedDay]![index] = Appointment(appointmentName, selectedTime!);
-                        }
-                        _selectedAppointments.value = _getAppointmentsForDay(_selectedDay);
-                      });
+                    if (appointmentName.isNotEmpty) {
+                      _saveAppointment(
+                        appointment: appointment != null
+                            ? appointment.copyWith(
+                                title: appointmentName,
+                                time: selectedTime,
+                                date: selectedDate)
+                            : Appointment(
+                                id: UniqueKey().toString(), // Only for new appointments
+                                title: appointmentName,
+                                time: selectedTime,
+                                date: selectedDate,
+                              ),
+                      );
                       Navigator.of(context).pop();
                     }
                   },
@@ -123,10 +183,36 @@ class _AppointmentScreenState extends State<AppointmentScreen> {
     );
   }
 
+  void _saveAppointment({required Appointment appointment}) async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      final appointmentData = appointment.toMap(context);
+
+      // Always update, regardless of whether it's new or existing
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid)
+          .collection('appointments')
+          .doc(appointment.id)
+          .set(appointmentData, SetOptions(merge: true));
+
+      // Update local state
+      final index = _appointments[appointment.date]?.indexWhere((a) => a.id == appointment.id);
+      if (index != null && index >= 0) {
+        _appointments[appointment.date]![index] = appointment;
+      } else {
+        _appointments[appointment.date]?.add(appointment);
+      }
+
+      // Update the selected appointments
+      _updateSelectedAppointments();
+    }
+  }
+
   void _deleteAppointment(Appointment appointment) {
     setState(() {
       _appointments[_selectedDay]?.remove(appointment);
-      _selectedAppointments.value = _getAppointmentsForDay(_selectedDay);
+      _updateSelectedAppointments();
     });
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -134,6 +220,16 @@ class _AppointmentScreenState extends State<AppointmentScreen> {
         duration: const Duration(seconds: 2),
       ),
     );
+
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid)
+          .collection('appointments')
+          .doc(appointment.id)
+          .delete();
+    }
   }
 
   @override
@@ -154,13 +250,14 @@ class _AppointmentScreenState extends State<AppointmentScreen> {
             focusedDay: _focusedDay,
             currentDay: _selectedDay,
             onDaySelected: _onDaySelected,
-            eventLoader: (day) => _getAppointmentsForDay(day),
+            eventLoader: (day) {
+              // Returning the list of appointments for the selected day
+              return _getAppointmentsForDay(day);
+            },
             firstDay: DateTime.utc(2024, 1, 1),
             lastDay: DateTime.utc(2030, 12, 31),
-            headerStyle: const HeaderStyle(
-              formatButtonVisible: false,
-            ),
-            calendarStyle: const CalendarStyle(
+            headerStyle: const HeaderStyle(formatButtonVisible: false),
+            calendarStyle: CalendarStyle(
               selectedDecoration: BoxDecoration(
                 color: Color.fromARGB(255, 52, 52, 52),
                 shape: BoxShape.circle,
@@ -169,12 +266,11 @@ class _AppointmentScreenState extends State<AppointmentScreen> {
                 color: Color.fromARGB(255, 52, 52, 52),
                 shape: BoxShape.circle,
               ),
-              defaultDecoration: BoxDecoration(
+              markerDecoration: BoxDecoration(
+                color: Colors.blue,
                 shape: BoxShape.circle,
               ),
-              weekendDecoration: BoxDecoration(
-                shape: BoxShape.circle,
-              ),
+              markersMaxCount: 1,
             ),
           ),
           const SizedBox(height: 16),
@@ -213,7 +309,7 @@ class _AppointmentScreenState extends State<AppointmentScreen> {
                 );
               },
             ),
-          ),
+          )
         ],
       ),
     );

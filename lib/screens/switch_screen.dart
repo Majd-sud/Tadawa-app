@@ -32,7 +32,7 @@ class _SwitchScreenState extends State<SwitchScreen> {
     super.initState();
     _screens = [
       MainScreen(),
-      AppointmentScreen(initialAppointments: widget.initialAppointments),
+      AppointmentScreen(),
       MedicationScreen(),
       const SettingsScreen(), 
     ];
