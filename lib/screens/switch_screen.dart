@@ -34,7 +34,7 @@ class _SwitchScreenState extends State<SwitchScreen> {
       MainScreen(),
       AppointmentScreen(),
       MedicationScreen(),
-      const SettingsScreen(), 
+      const SettingsScreen(),
     ];
   }
 
@@ -63,17 +63,38 @@ class _SwitchScreenState extends State<SwitchScreen> {
       body: _screens[_selectedIndex],
       bottomNavigationBar: BottomNavigationBar(
         backgroundColor: Colors.white,
-        selectedItemColor: Colors.black87,
-        unselectedItemColor: Colors.black26,
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.check_rounded), label: ''),
-          BottomNavigationBarItem(icon: Icon(Icons.calendar_month), label: ''),
-          BottomNavigationBarItem(icon: Icon(Icons.medication_sharp), label: ''),
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: ''),
-        ],
+        elevation: 8,
+        selectedItemColor: Colors.white,
+        unselectedItemColor: Colors.black54,
         currentIndex: _selectedIndex,
         onTap: _onItemTapped,
+        items: [
+          _buildNavBarItem(Icons.check_rounded, 'Home', 0),
+          _buildNavBarItem(Icons.calendar_month, 'Appointments', 1),
+          _buildNavBarItem(Icons.medication_sharp, 'Medications', 2),
+          _buildNavBarItem(Icons.person, 'Profile', 3),
+        ],
       ),
+    );
+  }
+
+  BottomNavigationBarItem _buildNavBarItem(IconData icon, String label, int index) {
+    final isSelected = _selectedIndex == index;
+
+    return BottomNavigationBarItem(
+      icon: Container(
+        decoration: BoxDecoration(
+          color: isSelected ? const Color.fromARGB(255, 46, 161, 132) : Colors.transparent,
+          borderRadius: BorderRadius.circular(20),
+        ),
+        padding: const EdgeInsets.all(8.0),
+        child: Icon(
+          icon,
+          size: isSelected ? 27: 24,
+          color: isSelected ? Colors.white : Colors.black54,
+        ),
+      ),
+      label: label,
     );
   }
 }

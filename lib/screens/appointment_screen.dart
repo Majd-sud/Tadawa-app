@@ -251,7 +251,6 @@ class _AppointmentScreenState extends State<AppointmentScreen> {
             currentDay: _selectedDay,
             onDaySelected: _onDaySelected,
             eventLoader: (day) {
-              // Returning the list of appointments for the selected day
               return _getAppointmentsForDay(day);
             },
             firstDay: DateTime.utc(2024, 1, 1),
@@ -259,15 +258,15 @@ class _AppointmentScreenState extends State<AppointmentScreen> {
             headerStyle: const HeaderStyle(formatButtonVisible: false),
             calendarStyle: CalendarStyle(
               selectedDecoration: BoxDecoration(
-                color: Color.fromARGB(255, 52, 52, 52),
+                color: const Color.fromARGB(255, 46, 161, 132), // Selected color
                 shape: BoxShape.circle,
               ),
               todayDecoration: BoxDecoration(
-                color: Color.fromARGB(255, 52, 52, 52),
+                color: const Color.fromARGB(255, 46, 161, 132), // Today color
                 shape: BoxShape.circle,
               ),
               markerDecoration: BoxDecoration(
-                color: Colors.blue,
+                color: const Color.fromARGB(255, 46, 161, 132), // Marker color
                 shape: BoxShape.circle,
               ),
               markersMaxCount: 1,
