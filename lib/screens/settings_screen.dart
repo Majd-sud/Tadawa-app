@@ -1,9 +1,49 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:tadawa_app/screens/auth_screen.dart';
+import 'package:tadawa_app/screens/profile_screen.dart';
 
-class SettingsScreen extends StatelessWidget {
+class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
+
+  @override
+  _SettingsScreenState createState() => _SettingsScreenState();
+}
+
+class _SettingsScreenState extends State<SettingsScreen> {
+  User? _currentUser;
+  String _username = '';
+  String _email = '';
+  String _imageUrl = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchUserData();
+  }
+
+  Future<void> _fetchUserData() async {
+    User? user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      setState(() {
+        _currentUser = user;
+        _email = user.email ?? '';
+      });
+
+      DocumentSnapshot userDoc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid)
+          .get();
+
+      if (userDoc.exists) {
+        setState(() {
+          _username = userDoc['username'] ?? '';
+          _imageUrl = userDoc['image_url'] ?? '';
+        });
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -44,23 +84,32 @@ class SettingsScreen extends StatelessWidget {
                       contentPadding: const EdgeInsets.all(16),
                       leading: CircleAvatar(
                         radius: 28,
-                        backgroundColor: Colors.blue.shade100,
-                        child: const Icon(Icons.person, color: Colors.blue, size: 28),
+                        backgroundImage: _imageUrl.isNotEmpty
+                            ? NetworkImage(_imageUrl)
+                            : const AssetImage('assets/images/default_profile.jpg')
+                                as ImageProvider,
                       ),
-                      title: const Text(
-                        'Derek Powell',
-                        style: TextStyle(
+                      title: Text(
+                        _username.isNotEmpty ? _username : 'User Name',
+                        style: const TextStyle(
                           fontWeight: FontWeight.w600,
                           fontSize: 16,
                           color: Colors.black87,
                         ),
                       ),
-                      subtitle: const Text(
-                        'derek@gmail.com',
-                        style: TextStyle(color: Colors.black54),
+                      subtitle: Text(
+                        _email.isNotEmpty ? _email : 'Email Address',
+                        style: const TextStyle(color: Colors.black54),
                       ),
-                      trailing: const Icon(Icons.chevron_right, color: Colors.grey),
-                      onTap: () {},
+                      trailing:
+                          const Icon(Icons.chevron_right, color: Colors.grey),
+                      onTap: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (context) => const ProfileScreen(),
+                          ),
+                        );
+                      },
                     ),
                   ),
                   _buildSectionHeader('General'),
@@ -119,7 +168,8 @@ class SettingsScreen extends StatelessWidget {
       elevation: 2,
       margin: const EdgeInsets.symmetric(vertical: 8.0),
       child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 16.0),
+        contentPadding:
+            const EdgeInsets.symmetric(vertical: 12.0, horizontal: 16.0),
         leading: CircleAvatar(
           backgroundColor: iconColor.withOpacity(0.15),
           radius: 24,
@@ -134,7 +184,8 @@ class SettingsScreen extends StatelessWidget {
           ),
         ),
         subtitle: subtitle != null
-            ? Text(subtitle, style: const TextStyle(color: Colors.black54, fontSize: 13))
+            ? Text(subtitle,
+                style: const TextStyle(color: Colors.black54, fontSize: 13))
             : null,
         trailing: const Icon(Icons.chevron_right, color: Colors.grey),
         onTap: onTap,
@@ -153,7 +204,8 @@ class SettingsScreen extends StatelessWidget {
       icon: const Icon(Icons.logout, color: Colors.white),
       label: const Text(
         'Logout',
-        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
+        style: TextStyle(
+            fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
       ),
       style: ElevatedButton.styleFrom(
         backgroundColor: const Color.fromARGB(255, 67, 150, 86),

@@ -256,17 +256,17 @@ class _AppointmentScreenState extends State<AppointmentScreen> {
             firstDay: DateTime.utc(2024, 1, 1),
             lastDay: DateTime.utc(2030, 12, 31),
             headerStyle: const HeaderStyle(formatButtonVisible: false),
-            calendarStyle: CalendarStyle(
+            calendarStyle: const CalendarStyle(
               selectedDecoration: BoxDecoration(
-                color: const Color.fromARGB(255, 46, 161, 132), // Selected color
+                color: Color.fromARGB(255, 46, 161, 132), // Selected color
                 shape: BoxShape.circle,
               ),
               todayDecoration: BoxDecoration(
-                color: const Color.fromARGB(255, 46, 161, 132), // Today color
+                color: Color.fromARGB(255, 46, 161, 132), // Today color
                 shape: BoxShape.circle,
               ),
               markerDecoration: BoxDecoration(
-                color: const Color.fromARGB(255, 46, 161, 132), // Marker color
+                color: Color.fromARGB(255, 46, 161, 132), // Marker color
                 shape: BoxShape.circle,
               ),
               markersMaxCount: 1,

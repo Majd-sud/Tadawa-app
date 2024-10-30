@@ -236,14 +236,14 @@ class _AuthScreenState extends State<AuthScreen> {
                   const SizedBox(height: 20),
                   ElevatedButton(
                     onPressed: _submit,
-                    child: Text(_isLogin ? 'Login' : 'Register'),
                     style: ElevatedButton.styleFrom(
-                      minimumSize: Size(double.infinity, 50), // Full width
+                      minimumSize: const Size(double.infinity, 50), // Full width
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(30),
                       ),
                       textStyle: const TextStyle(fontSize: 18),
                     ),
+                    child: Text(_isLogin ? 'Login' : 'Register'),
                   ),
                   const SizedBox(height: 10),
                   TextButton(

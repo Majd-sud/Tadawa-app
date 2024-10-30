@@ -6,9 +6,11 @@ class ProfileImage extends StatefulWidget {
   const ProfileImage({
     super.key,
     required this.onPickImage,
+    this.initialImageUrl, // Accepts an initial image URL
   });
 
   final void Function(File pickedImage) onPickImage;
+  final String? initialImageUrl; // Stores the initial image URL
 
   @override
   State<ProfileImage> createState() {
@@ -19,22 +21,50 @@ class ProfileImage extends StatefulWidget {
 class _ProfileImageState extends State<ProfileImage> {
   File? _pickedImageFile;
 
-  void _pickImage() async {
-    final pickedImage = await ImagePicker().pickImage(
-      source: ImageSource.camera,
-      imageQuality: 50,
-      maxWidth: 150,
+  @override
+  void initState() {
+    super.initState();
+    // Initialize the picked image file based on the initial image URL
+    if (widget.initialImageUrl != null && widget.initialImageUrl!.isNotEmpty) {
+      _pickedImageFile = null; // Indicates that a default image should be shown
+    }
+  }
+
+  Future<void> _pickImage() async {
+    final ImagePicker picker = ImagePicker();
+
+    // Show a dialog to choose image source
+    final source = await showDialog<ImageSource>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Choose Image Source'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(ImageSource.camera),
+            child: const Text('Camera'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(ImageSource.gallery),
+            child: const Text('Gallery'),
+          ),
+        ],
+      ),
     );
 
-    if (pickedImage == null) {
-      return;
+    if (source == null) return; // User canceled the dialog
+
+    // Pick the image from the chosen source
+    final pickedImage = await picker.pickImage(
+      source: source,
+      imageQuality: 50,
+    );
+
+    if (pickedImage != null) {
+      setState(() {
+        _pickedImageFile = File(pickedImage.path);
+      });
+      widget.onPickImage(_pickedImageFile!);
     }
-
-    setState(() {
-      _pickedImageFile = File(pickedImage.path);
-    });
-
-    widget.onPickImage(_pickedImageFile!);
   }
 
   @override
@@ -44,9 +74,13 @@ class _ProfileImageState extends State<ProfileImage> {
         CircleAvatar(
           radius: 40,
           backgroundColor: Colors.grey,
-          foregroundImage:
-              _pickedImageFile != null ? FileImage(_pickedImageFile!) : null,
+          foregroundImage: _pickedImageFile != null 
+              ? FileImage(_pickedImageFile!)
+              : widget.initialImageUrl != null && widget.initialImageUrl!.isNotEmpty
+                  ? NetworkImage(widget.initialImageUrl!)
+                  : const AssetImage('assets/images/default_profile.jpg') as ImageProvider,
         ),
+        const SizedBox(height: 8),
         TextButton.icon(
           onPressed: _pickImage,
           icon: const Icon(Icons.image),
@@ -56,7 +90,7 @@ class _ProfileImageState extends State<ProfileImage> {
               color: Theme.of(context).colorScheme.primary,
             ),
           ),
-        )
+        ),
       ],
     );
   }

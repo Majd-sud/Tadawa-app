@@ -107,7 +107,7 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
         _time == null ||
         _selectedSchedule == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Please fill in all fields.')),
+        const SnackBar(content: Text('Please fill in all fields.')),
       );
       return;
     }

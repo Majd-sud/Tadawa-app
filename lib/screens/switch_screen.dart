@@ -31,9 +31,9 @@ class _SwitchScreenState extends State<SwitchScreen> {
   void initState() {
     super.initState();
     _screens = [
-      MainScreen(),
-      AppointmentScreen(),
-      MedicationScreen(),
+      const MainScreen(),
+      const AppointmentScreen(),
+      const MedicationScreen(),
       const SettingsScreen(),
     ];
   }
