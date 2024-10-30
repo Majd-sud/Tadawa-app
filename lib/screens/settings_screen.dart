@@ -48,33 +48,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[200],
       appBar: AppBar(
-        title: const Text(
-          'Settings',
-          style: TextStyle(
-            color: Colors.black,
-            fontSize: 24,
-            fontWeight: FontWeight.w700,
-            letterSpacing: 1.2,
-          ),
-        ),
-        centerTitle: true,
-        backgroundColor: Colors.white,
-        elevation: 1,
-        iconTheme: const IconThemeData(color: Colors.black),
+        backgroundColor: const Color.fromRGBO(255, 254, 247, 255),
+        title: const Text('Settings'),
       ),
       body: Column(
         children: [
           Expanded(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.all(16.0),
+              padding: const EdgeInsets.all(16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const SizedBox(height: 20),
-                  _buildSectionHeader('Account'),
                   Card(
+                     color: const Color.fromRGBO(247, 242, 250, 1),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
@@ -86,8 +73,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         radius: 28,
                         backgroundImage: _imageUrl.isNotEmpty
                             ? NetworkImage(_imageUrl)
-                            : const AssetImage('assets/images/default_profile.jpg')
-                                as ImageProvider,
+                            : const AssetImage('assets/images/default_profile.jpg') as ImageProvider,
                       ),
                       title: Text(
                         _username.isNotEmpty ? _username : 'User Name',
@@ -101,8 +87,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         _email.isNotEmpty ? _email : 'Email Address',
                         style: const TextStyle(color: Colors.black54),
                       ),
-                      trailing:
-                          const Icon(Icons.chevron_right, color: Colors.grey),
+                      trailing: const Icon(Icons.chevron_right, color: Colors.grey),
                       onTap: () {
                         Navigator.of(context).push(
                           MaterialPageRoute(
@@ -112,44 +97,28 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       },
                     ),
                   ),
-                  _buildSectionHeader('General'),
+                  const Text('Preferences', style: TextStyle(fontSize: 20)),
                   _buildSettingsListTile(
                     icon: Icons.nightlight_round,
                     title: 'Appearance',
                     subtitle: 'Light',
-                    iconColor: Colors.purple,
+                    iconColor: const Color.fromARGB(255, 134, 134, 134),
                     onTap: () {},
                   ),
                   _buildSettingsListTile(
                     icon: Icons.language,
                     title: 'Language',
                     subtitle: 'English',
-                    iconColor: Colors.orange,
+                    iconColor: const Color.fromARGB(255, 134, 134, 134),
                     onTap: () {},
                   ),
+                  const SizedBox(height: 16), // Add space between Preferences and Logout
+                  Center(child: _buildLogoutButton(context)), // Center the button
                 ],
               ),
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: _buildLogoutButton(context),
-          ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildSectionHeader(String title) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 16.0),
-      child: Text(
-        title,
-        style: const TextStyle(
-          fontSize: 20,
-          fontWeight: FontWeight.bold,
-          color: Colors.black87,
-        ),
       ),
     );
   }
@@ -162,14 +131,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
     required VoidCallback onTap,
   }) {
     return Card(
+       color: const Color.fromRGBO(247, 242, 250, 1),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
       ),
-      elevation: 2,
+      elevation: 1,
       margin: const EdgeInsets.symmetric(vertical: 8.0),
       child: ListTile(
-        contentPadding:
-            const EdgeInsets.symmetric(vertical: 12.0, horizontal: 16.0),
+        contentPadding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 16.0),
         leading: CircleAvatar(
           backgroundColor: iconColor.withOpacity(0.15),
           radius: 24,
@@ -184,8 +153,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
         ),
         subtitle: subtitle != null
-            ? Text(subtitle,
-                style: const TextStyle(color: Colors.black54, fontSize: 13))
+            ? Text(subtitle, style: const TextStyle(color: Colors.black54, fontSize: 13))
             : null,
         trailing: const Icon(Icons.chevron_right, color: Colors.grey),
         onTap: onTap,
@@ -208,7 +176,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
       ),
       style: ElevatedButton.styleFrom(
-        backgroundColor: const Color.fromARGB(255, 67, 150, 86),
+        backgroundColor: Colors.redAccent, // Softer red color
         padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 16.0),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),

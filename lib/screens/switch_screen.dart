@@ -47,15 +47,29 @@ class _SwitchScreenState extends State<SwitchScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: const Color.fromARGB(255, 248, 248, 248),
-        flexibleSpace: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Image.asset(
-              'assets/logos/logo2.PNG',
-              height: 40,
-              width: 40,
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(80.0), 
+        child: AppBar(
+            backgroundColor: const Color.fromRGBO(255, 254, 247, 255),
+          elevation: 0, 
+          flexibleSpace: SafeArea(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Image.asset(
+                    'assets/logos/logo2.PNG',
+                    height: 40,
+                    width: 40,
+                  ),
+                ),
+                const Divider(
+                  color: Colors.grey, 
+                  thickness: 1, 
+                  height: 1, 
+                ),
+              ],
             ),
           ),
         ),
@@ -69,10 +83,10 @@ class _SwitchScreenState extends State<SwitchScreen> {
         currentIndex: _selectedIndex,
         onTap: _onItemTapped,
         items: [
-          _buildNavBarItem(Icons.check_rounded, 'Home', 0),
-          _buildNavBarItem(Icons.calendar_month, 'Appointments', 1),
-          _buildNavBarItem(Icons.medication_sharp, 'Medications', 2),
-          _buildNavBarItem(Icons.person, 'Profile', 3),
+          _buildNavBarItem(Icons.check_rounded, '', 0),
+          _buildNavBarItem(Icons.calendar_month, '', 1),
+          _buildNavBarItem(Icons.medication_sharp, '', 2),
+          _buildNavBarItem(Icons.person, '', 3),
         ],
       ),
     );
@@ -90,7 +104,7 @@ class _SwitchScreenState extends State<SwitchScreen> {
         padding: const EdgeInsets.all(8.0),
         child: Icon(
           icon,
-          size: isSelected ? 27: 24,
+          size: isSelected ? 27 : 24,
           color: isSelected ? Colors.white : Colors.black54,
         ),
       ),

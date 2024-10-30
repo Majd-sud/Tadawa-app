@@ -139,7 +139,7 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
           'expirationDate': medication.expirationDate,
           'notes': medication.notes,
           'pillsCount': medication.pillsCount,
-          'time': medication.time.format(context), // Ensure this is in the correct format
+          'time': medication.time.format(context),
           'frequency': medication.frequency,
         });
       } else {
@@ -148,7 +148,7 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
             .collection('users')
             .doc(user.uid)
             .collection('medications')
-            .doc(widget.medication!.id) // Ensure you have an ID for the medication
+            .doc(widget.medication!.id)
             .update({
           'name': medication.name,
           'startDate': medication.startDate,
@@ -173,55 +173,72 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(
-            widget.medication != null ? 'Edit Medication' : 'Add Medication'),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: SingleChildScrollView(
-          child: Column(
-            children: [
-              _buildTextField(_nameController, 'Medication Name'),
-              MedicationImage(
-                onImageSelected: (imagePath) {
-                  setState(() {});
-                },
-                initialImagePath: null,
-              ),
-              _buildDateRow(
-                  'Start Date', _startDate, () => _presentDatePicker('start')),
-              _buildDateRow(
-                  'End Date', _endDate, () => _presentDatePicker('end')),
-              _buildTimeRow(),
-              const SizedBox(height: 20),
-              _buildScheduleButtons(),
-              const SizedBox(height: 20),
-              _buildPillCountPicker(),
-              _buildDateRow('Expiration Date', _expirationDate,
-                  () => _presentDatePicker('expiration')),
-              _buildTextField(_notesController, 'Notes'),
-              const SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: _saveMedication,
-                style: ElevatedButton.styleFrom(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+    return Container(
+      color: Colors.white, // Optional: Set a background color
+      child: Column(
+        children: [
+          const SizedBox(height: 20), // Space above the AppBar
+          Expanded(
+            child: Scaffold(
+              appBar: AppBar(
+                backgroundColor: const Color.fromRGBO(255, 254, 247, 255),
+                title: Text(
+                  widget.medication != null ? 'Edit Medication' : 'Add Medication',
                 ),
-                child: const Text('Save Medication'),
               ),
-            ],
+              body: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: SingleChildScrollView(
+                  child: Column(
+                    children: [
+                      _buildTextField(_nameController, 'Medication Name'),
+                      MedicationImage(
+                        onImageSelected: (imagePath) {
+                          setState(() {});
+                        },
+                        initialImagePath: null,
+                      ),
+                      _buildDateRow('Start Date', _startDate, () => _presentDatePicker('start')),
+                      _buildDateRow('End Date', _endDate, () => _presentDatePicker('end')),
+                      _buildTimeRow(),
+                      const SizedBox(height: 20),
+                      _buildScheduleButtons(),
+                      const SizedBox(height: 20),
+                      _buildPillCountPicker(),
+                      _buildDateRow('Expiration Date', _expirationDate, () => _presentDatePicker('expiration')),
+                      _buildTextField(_notesController, 'Notes'),
+                      const SizedBox(height: 20),
+                      ElevatedButton(
+                        onPressed: _saveMedication,
+                        style: ElevatedButton.styleFrom(
+                          minimumSize: const Size(double.infinity, 50), 
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(30),
+                          ),
+                          backgroundColor: const Color.fromARGB(255, 46, 161, 132), 
+                          elevation: 5,
+                        ),
+                        child: const Text(
+                          'Save Medication',
+                          style: TextStyle(fontSize: 18, color: Colors.white), // Ensure text is white here
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                    ],
+                  ),
+                ),
+              ),
+            ),
           ),
-        ),
+        ],
       ),
     );
   }
 
   Widget _buildTextField(TextEditingController controller, String label) {
-    return Card(
-      elevation: 4,
-      child: TextField(
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: TextFormField(
         controller: controller,
         maxLength: 50,
         decoration: InputDecoration(
@@ -254,7 +271,7 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Text(
-          _time == null ? 'Start Time' : _time!.format(context),
+          _time == null ? 'Time' : _time!.format(context),
           style: const TextStyle(fontSize: 16),
         ),
         IconButton(
@@ -273,28 +290,28 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
           onPressed: () => _selectSchedule('Daily'),
           style: ElevatedButton.styleFrom(
             backgroundColor: _selectedSchedule == 'Daily'
-                ? Colors.blue
+                ? const Color.fromARGB(255, 46, 161, 132) // Selected color
                 : Colors.grey,
           ),
-          child: const Text('Daily'),
+          child: const Text('Daily', style: TextStyle(color: Colors.white)), // White text
         ),
         ElevatedButton(
           onPressed: () => _selectSchedule('Weekly'),
           style: ElevatedButton.styleFrom(
             backgroundColor: _selectedSchedule == 'Weekly'
-                ? Colors.blue
+                ? const Color.fromARGB(255, 46, 161, 132) // Selected color
                 : Colors.grey,
           ),
-          child: const Text('Weekly'),
+          child: const Text('Weekly', style: TextStyle(color: Colors.white)), // White text
         ),
         ElevatedButton(
           onPressed: () => _selectSchedule('Monthly'),
           style: ElevatedButton.styleFrom(
             backgroundColor: _selectedSchedule == 'Monthly'
-                ? Colors.blue
+                ? const Color.fromARGB(255, 46, 161, 132) // Selected color
                 : Colors.grey,
           ),
-          child: const Text('Monthly'),
+          child: const Text('Monthly', style: TextStyle(color: Colors.white)), // White text
         ),
       ],
     );

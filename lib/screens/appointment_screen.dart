@@ -48,7 +48,9 @@ class _AppointmentScreenState extends State<AppointmentScreen> {
             );
 
             // Add appointment to the map
-            _appointments.putIfAbsent(appointmentDate, () => []).add(appointment);
+            _appointments
+                .putIfAbsent(appointmentDate, () => [])
+                .add(appointment);
           } catch (e) {
             print("Error parsing appointment: ${doc.data()} - $e");
           }
@@ -56,7 +58,7 @@ class _AppointmentScreenState extends State<AppointmentScreen> {
 
         // Update the selected appointments for the current selected day
         _updateSelectedAppointments();
-        
+
         // Update the calendar markers
         setState(() {});
       }, onError: (error) {
@@ -96,7 +98,8 @@ class _AppointmentScreenState extends State<AppointmentScreen> {
         return StatefulBuilder(
           builder: (context, setDialogState) {
             return AlertDialog(
-              title: Text(appointment == null ? 'Add Appointment' : 'Edit Appointment'),
+              title: Text(
+                  appointment == null ? 'Add Appointment' : 'Edit Appointment'),
               content: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -104,7 +107,8 @@ class _AppointmentScreenState extends State<AppointmentScreen> {
                     onChanged: (value) {
                       appointmentName = value;
                     },
-                    decoration: const InputDecoration(hintText: "Enter appointment"),
+                    decoration:
+                        const InputDecoration(hintText: "Enter appointment"),
                     controller: TextEditingController(text: appointmentName),
                   ),
                   const SizedBox(height: 16),
@@ -128,25 +132,6 @@ class _AppointmentScreenState extends State<AppointmentScreen> {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 16),
-                  Text("Date: ${selectedDate.toLocal()}".split(' ')[0]),
-                  const SizedBox(height: 8),
-                  ElevatedButton(
-                    onPressed: () async {
-                      final pickedDate = await showDatePicker(
-                        context: context,
-                        initialDate: selectedDate,
-                        firstDate: DateTime.now(),
-                        lastDate: DateTime.utc(2030, 12, 31),
-                      );
-                      if (pickedDate != null) {
-                        setDialogState(() {
-                          selectedDate = pickedDate;
-                        });
-                      }
-                    },
-                    child: const Text("Select Date"),
-                  ),
                 ],
               ),
               actions: [
@@ -160,7 +145,8 @@ class _AppointmentScreenState extends State<AppointmentScreen> {
                                 time: selectedTime,
                                 date: selectedDate)
                             : Appointment(
-                                id: UniqueKey().toString(), // Only for new appointments
+                                id: UniqueKey()
+                                    .toString(), // Only for new appointments
                                 title: appointmentName,
                                 time: selectedTime,
                                 date: selectedDate,
@@ -188,7 +174,6 @@ class _AppointmentScreenState extends State<AppointmentScreen> {
     if (user != null) {
       final appointmentData = appointment.toMap(context);
 
-      // Always update, regardless of whether it's new or existing
       await FirebaseFirestore.instance
           .collection('users')
           .doc(user.uid)
@@ -197,7 +182,8 @@ class _AppointmentScreenState extends State<AppointmentScreen> {
           .set(appointmentData, SetOptions(merge: true));
 
       // Update local state
-      final index = _appointments[appointment.date]?.indexWhere((a) => a.id == appointment.id);
+      final index = _appointments[appointment.date]
+          ?.indexWhere((a) => a.id == appointment.id);
       if (index != null && index >= 0) {
         _appointments[appointment.date]![index] = appointment;
       } else {
@@ -237,6 +223,7 @@ class _AppointmentScreenState extends State<AppointmentScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Appointments'),
+        backgroundColor: const Color.fromRGBO(255, 254, 247, 255),
         actions: [
           IconButton(
             icon: const Icon(Icons.add),
@@ -281,7 +268,9 @@ class _AppointmentScreenState extends State<AppointmentScreen> {
                   itemCount: value.length,
                   itemBuilder: (context, index) {
                     return Card(
-                      margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+                      color: const Color.fromRGBO(247, 242, 250, 1),
+                      margin: const EdgeInsets.symmetric(
+                          vertical: 8, horizontal: 16),
                       elevation: 4,
                       child: ListTile(
                         leading: const Icon(Icons.event),
@@ -297,7 +286,8 @@ class _AppointmentScreenState extends State<AppointmentScreen> {
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(10),
                         ),
-                        onTap: () => _addOrEditAppointment(appointment: value[index]),
+                        onTap: () =>
+                            _addOrEditAppointment(appointment: value[index]),
                         trailing: IconButton(
                           icon: const Icon(Icons.delete),
                           onPressed: () => _deleteAppointment(value[index]),

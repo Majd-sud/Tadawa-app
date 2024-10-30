@@ -136,8 +136,8 @@ class _MainScreenState extends State<MainScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Medications Overview')
-      ),
+          backgroundColor: const Color.fromRGBO(255, 254, 247, 255),
+          title: const Text('Medications Overview')),
       body: Column(
         children: [
           _buildDateSelector(),
@@ -148,6 +148,7 @@ class _MainScreenState extends State<MainScreen> {
               itemBuilder: (context, index) {
                 final medication = _getTodaysMedications(_selectedDate)[index];
                 return Card(
+                  color: const Color.fromRGBO(247, 242, 250, 1),
                   margin:
                       const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   elevation: 4,

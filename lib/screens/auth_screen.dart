@@ -64,7 +64,10 @@ class _AuthScreenState extends State<AuthScreen> {
           await storageRef.putFile(_selectedImage!);
           var imageUrl = await storageRef.getDownloadURL();
 
-          await _firestore.collection('users').doc(userCredential.user!.uid).set({
+          await _firestore
+              .collection('users')
+              .doc(userCredential.user!.uid)
+              .set({
             'username': _enteredUsername,
             'firstName': _enteredFirstName,
             'lastName': _enteredLastName,
@@ -92,6 +95,7 @@ class _AuthScreenState extends State<AuthScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: const Color.fromRGBO(255, 254, 247, 255),
         title: Text(_isLogin ? 'Login' : 'Register'),
         centerTitle: true,
       ),
@@ -99,11 +103,11 @@ class _AuthScreenState extends State<AuthScreen> {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            if (_isLogin) // Display logo only in login
+            if (_isLogin)
               Center(
                 child: Image.asset(
                   'assets/logos/logo1.PNG',
-                  height: 150, // Increased size
+                  height: 150,
                   width: 150,
                 ),
               ),
@@ -193,7 +197,9 @@ class _AuthScreenState extends State<AuthScreen> {
                       _enteredEmail = value;
                     },
                     validator: (value) {
-                      if (value == null || value.isEmpty || !value.contains('@')) {
+                      if (value == null ||
+                          value.isEmpty ||
+                          !value.contains('@')) {
                         return 'Please enter a valid email address.';
                       }
                       return null;
@@ -241,9 +247,13 @@ class _AuthScreenState extends State<AuthScreen> {
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(30),
                       ),
+                      backgroundColor: const Color.fromARGB(255, 46, 161, 132), // Background color
                       textStyle: const TextStyle(fontSize: 18),
                     ),
-                    child: Text(_isLogin ? 'Login' : 'Register'),
+                    child: Text(
+                      _isLogin ? 'Login' : 'Register',
+                      style: const TextStyle(color: Colors.white), // Text color
+                    ),
                   ),
                   const SizedBox(height: 10),
                   TextButton(

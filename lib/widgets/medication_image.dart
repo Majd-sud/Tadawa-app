@@ -72,7 +72,7 @@ class _MedicationImageState extends State<MedicationImage> {
           color: Theme.of(context).colorScheme.primary.withOpacity(0.2),
         ),
       ),
-      height: 250,
+      height: 200,
       width: double.infinity,
       alignment: Alignment.center,
       child: content,

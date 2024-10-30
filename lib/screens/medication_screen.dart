@@ -40,7 +40,9 @@ class _MedicationScreenState extends State<MedicationScreen> {
             expirationDate: _parseDate(data['expirationDate']),
             notes: data['notes'] ?? '',
             pillsCount: data['pillsCount'] ?? 0,
-            time: data['time'] != null ? _parseTime(data['time']) : const TimeOfDay(hour: 12, minute: 0),
+            time: data['time'] != null
+                ? _parseTime(data['time'])
+                : const TimeOfDay(hour: 12, minute: 0),
             frequency: data['frequency'] ?? '',
             schedule: data['schedule'] ?? '',
           );
@@ -95,6 +97,7 @@ class _MedicationScreenState extends State<MedicationScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+          backgroundColor: const Color.fromRGBO(255, 254, 247, 255),
         title: const Text('Medications'),
         actions: [
           IconButton(
@@ -154,6 +157,7 @@ class _MedicationScreenState extends State<MedicationScreen> {
                   );
                 },
                 child: Card(
+                   color: const Color.fromRGBO(247, 242, 250, 1),
                   elevation: 2,
                   margin: const EdgeInsets.symmetric(vertical: 8.0),
                   child: ListTile(
