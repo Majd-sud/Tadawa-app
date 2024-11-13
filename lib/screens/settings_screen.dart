@@ -61,7 +61,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Card(
-                     color: const Color.fromRGBO(247, 242, 250, 1),
+                    color: const Color.fromRGBO(247, 242, 250, 1),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
@@ -112,6 +112,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     iconColor: const Color.fromARGB(255, 134, 134, 134),
                     onTap: () {},
                   ),
+                  _buildSettingsListTile(
+                    icon: Icons.notifications,
+                    title: 'Notification',
+                    subtitle: 'Manage notifications',
+                    iconColor: const Color.fromARGB(255, 134, 134, 134),
+                    onTap: () {
+                      _showNotificationDialog();
+                    },
+                  ),
                   const SizedBox(height: 16), // Add space between Preferences and Logout
                   Center(child: _buildLogoutButton(context)), // Center the button
                 ],
@@ -131,7 +140,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     required VoidCallback onTap,
   }) {
     return Card(
-       color: const Color.fromRGBO(247, 242, 250, 1),
+      color: const Color.fromRGBO(247, 242, 250, 1),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
       ),
@@ -183,6 +192,69 @@ class _SettingsScreenState extends State<SettingsScreen> {
         ),
         elevation: 3,
       ),
+    );
+  }
+
+  void _showNotificationDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          backgroundColor: const Color.fromRGBO(247, 242, 250, 1), // Light background color
+          title: const Text(
+            'Notification Settings',
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 20,
+              color: Colors.black87,
+            ),
+          ),
+          content: SingleChildScrollView(
+            child: ListBody(
+              children: const <Widget>[
+                Text(
+                  'Please make sure to open:\n',
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Colors.black54,
+                  ),
+                ),
+                Text(
+                  'Settings > Apps > Tadawa App > Notifications > Allow',
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Colors.black,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                SizedBox(height: 8), // Add space between lines
+                Text(
+                  'Settings > Apps > Tadawa App > Alarms & reminders > Allow',
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Colors.black,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Close the dialog
+              },
+              child: const Text(
+                'OK',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: Color.fromARGB(255, 46, 161, 132), // Custom color for the button
+                ),
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 }

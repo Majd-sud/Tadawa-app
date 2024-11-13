@@ -1,9 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:tadawa_app/models/medication.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:intl/intl.dart';
 import 'package:tadawa_app/screens/add_medication_screen.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:tadawa_app/notification_service.dart';
+import 'package:timezone/data/latest.dart' as tz;
+import 'package:timezone/timezone.dart' as tz;
+import 'package:flutter_timezone/flutter_timezone.dart'; // Import this package
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -19,7 +24,19 @@ class _MainScreenState extends State<MainScreen> {
   @override
   void initState() {
     super.initState();
+    tz.initializeTimeZones();
+
+    // Set the local time zone
+    _setLocalTimeZone();
+
+    NotificationService
+        .initialize(); // Ensure notification service is initialized
     _fetchMedications();
+  }
+
+  Future<void> _setLocalTimeZone() async {
+    final timeZoneName = await FlutterTimezone.getLocalTimezone();
+    tz.setLocalLocation(tz.getLocation(timeZoneName));
   }
 
   Future<void> _fetchMedications() async {
@@ -27,7 +44,6 @@ class _MainScreenState extends State<MainScreen> {
 
     if (user != null) {
       try {
-        // Fetch medications from the user's subcollection
         final snapshot = await FirebaseFirestore.instance
             .collection('users')
             .doc(user.uid)
@@ -35,17 +51,16 @@ class _MainScreenState extends State<MainScreen> {
             .get();
 
         setState(() {
-          // Map the fetched documents to Medication objects
           _medications = snapshot.docs
-              .map((doc) => Medication.fromFirestore(
-                  doc.data(), doc.id)) // Pass doc.id here
+              .map((doc) => Medication.fromFirestore(doc.data(), doc.id))
               .toList();
         });
 
-        // Log the number of documents fetched
-        print('Number of documents fetched: ${snapshot.docs.length}');
         print(
             'Fetched medications: ${_medications.map((m) => m.name).toList()}');
+
+        // Schedule notifications for each medication
+        await _scheduleNotifications();
       } catch (e) {
         print('Error fetching medications: $e');
       }
@@ -54,38 +69,89 @@ class _MainScreenState extends State<MainScreen> {
     }
   }
 
-  List<Medication> _getTodaysMedications(DateTime date) {
-    final dateOnly =
-        DateTime(date.year, date.month, date.day); // Normalize to midnight
+  Future<void> _scheduleNotifications() async {
+    for (var medication in _medications) {
+      print('Scheduling notifications for: ${medication.name}');
 
-    return _medications.where((medication) {
-      final reminderDates = _generateReminderDates(
+      final List<DateTime> reminderDates = _generateReminderDates(
         medication.startDate,
         medication.endDate,
         medication.frequency,
+        medication.time,
       );
 
-      // Debugging: Log the medication details
-      print('Checking medication: ${medication.name}');
-      print('  Start Date: ${medication.startDate}');
-      print('  End Date: ${medication.endDate}');
-      print('  Frequency: ${medication.frequency}');
-      print('  Reminder Dates: $reminderDates');
-      print('  Selected Date: $dateOnly');
+      for (var reminderDate in reminderDates) {
+        final tz.TZDateTime localDateTime = tz.TZDateTime(
+          tz.local,
+          reminderDate.year,
+          reminderDate.month,
+          reminderDate.day,
+          medication.time.hour % 24, // Ensure correct hour format
+          medication.time.minute,
+        );
 
-      return reminderDates
-          .any((reminderDate) => reminderDate.isAtSameMomentAs(dateOnly));
-    }).toList();
+        print('Attempting to schedule for: $localDateTime');
+
+        // Ensure the scheduled date is in the future
+        if (localDateTime.isBefore(tz.TZDateTime.now(tz.local))) {
+          print(
+              'Scheduled time is in the past. Skipping scheduling for: $localDateTime');
+          continue;
+        }
+
+        // Schedule the notification
+        await _scheduleNotification(medication, localDateTime);
+      }
+    }
   }
 
-  List<DateTime> _generateReminderDates(
-      DateTime start, DateTime end, String frequency) {
+  Future<void> _scheduleNotification(
+      Medication medication, tz.TZDateTime localDateTime) async {
+    int notificationId =
+        medication.id.hashCode ^ localDateTime.millisecondsSinceEpoch;
+    notificationId =
+        notificationId.abs() % (1 << 31); // Ensure it fits in the 32-bit range
+
+    try {
+      await NotificationService.flutterLocalNotificationsPlugin.zonedSchedule(
+        notificationId,
+        'Medication Reminder',
+        'Time to take your medication: ${medication.name}',
+        localDateTime,
+        const NotificationDetails(
+          android: AndroidNotificationDetails(
+            'medication_channel',
+            'Medication Reminders',
+            channelDescription: 'Channel for medication reminders',
+            importance: Importance.max,
+            priority: Priority.high,
+          ),
+        ),
+        androidScheduleMode: AndroidScheduleMode.exact,
+        uiLocalNotificationDateInterpretation:
+            UILocalNotificationDateInterpretation.absoluteTime,
+      );
+      print('Scheduled notification for: ${medication.name} at $localDateTime');
+    } catch (e) {
+      print('Error scheduling notification: $e');
+    }
+  }
+
+  List<DateTime> _generateReminderDates(DateTime start, DateTime end,
+      String frequency, TimeOfDay medicationTime) {
     List<DateTime> reminderDates = [];
     DateTime currentDate = start;
 
     while (currentDate.isBefore(end) || currentDate.isAtSameMomentAs(end)) {
-      reminderDates.add(DateTime(currentDate.year, currentDate.month,
-          currentDate.day)); // Normalize to midnight
+      final dateTimeWithMedTime = DateTime(
+        currentDate.year,
+        currentDate.month,
+        currentDate.day,
+        medicationTime.hour % 24, // Correctly handle 12 AM / 12 PM
+        medicationTime.minute,
+      );
+
+      reminderDates.add(dateTimeWithMedTime);
 
       switch (frequency) {
         case 'Daily':
@@ -95,86 +161,76 @@ class _MainScreenState extends State<MainScreen> {
           currentDate = currentDate.add(const Duration(days: 7));
           break;
         case 'Monthly':
-          int nextMonth = currentDate.month + 1;
-          int nextYear = currentDate.year;
-
-          if (nextMonth > 12) {
-            nextMonth = 1;
-            nextYear += 1;
-          }
-
-          currentDate = DateTime(nextYear, nextMonth, currentDate.day);
-          // Adjust for months with fewer days
-          if (currentDate.day > DateTime(nextYear, nextMonth + 1, 0).day) {
-            currentDate = DateTime(nextYear, nextMonth + 1, 0);
-          }
+          currentDate = DateTime(
+              currentDate.year, currentDate.month + 1, currentDate.day);
           break;
         default:
           break;
       }
     }
+
     return reminderDates;
-  }
-
-  void _navigateToAddMedication() async {
-    final medication = await Navigator.push<Medication>(
-      context,
-      MaterialPageRoute(
-        builder: (context) => const AddMedicationScreen(),
-      ),
-    );
-
-    if (medication != null) {
-      setState(() {
-        _medications.add(medication);
-      });
-      // Optionally, you could save the new medication to Firestore here
-    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-          backgroundColor: const Color.fromRGBO(255, 254, 247, 255),
-          title: const Text('Medications Overview')),
+        backgroundColor: const Color.fromRGBO(255, 254, 247, 255),
+        title: const Text('Medications Overview'),
+      ),
       body: Column(
         children: [
           _buildDateSelector(),
           const SizedBox(height: 20),
           Expanded(
-            child: ListView.builder(
-              itemCount: _getTodaysMedications(_selectedDate).length,
-              itemBuilder: (context, index) {
-                final medication = _getTodaysMedications(_selectedDate)[index];
-                return Card(
-                  color: const Color.fromRGBO(247, 242, 250, 1),
-                  margin:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  elevation: 4,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: ListTile(
-                    title: Text(medication.name),
-                    subtitle: Text('Time: ${medication.time.format(context)}'),
-                    trailing: Checkbox(
-                      value: medication.takenStatus[_selectedDate] ?? false,
-                      onChanged: (value) {
-                        setState(() {
-                          medication.takenStatus[_selectedDate] =
-                              value ?? false;
-                        });
-                      },
-                    ),
-                  ),
-                );
-              },
-            ),
+            child: _buildMedicationList(),
           ),
         ],
       ),
     );
+  }
+
+  Widget _buildMedicationList() {
+    final todaysMedications = _getTodaysMedications(_selectedDate);
+
+    if (todaysMedications.isEmpty) {
+      return const Center(child: Text('No medications for this date.'));
+    }
+
+    return ListView.builder(
+      itemCount: todaysMedications.length,
+      itemBuilder: (context, index) {
+        final medication = todaysMedications[index];
+        return Card(
+          color: const Color.fromRGBO(247, 242, 250, 1),
+          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          elevation: 4,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: ListTile(
+            title: Text(medication.name),
+            subtitle: Text('Time: ${_formatTime(medication.time)}'),
+            trailing: Checkbox(
+              value: medication.takenStatus[_selectedDate] ?? false,
+              onChanged: (value) {
+                setState(() {
+                  medication.takenStatus[_selectedDate] = value ?? false;
+                });
+              },
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  String _formatTime(TimeOfDay time) {
+    final hour = time.hour % 12 == 0 ? 12 : time.hour % 12;
+    final minute = time.minute.toString().padLeft(2, '0');
+    final amPm = time.hour >= 12 ? 'PM' : 'AM';
+    return '$hour:$minute $amPm';
   }
 
   Widget _buildDateSelector() {
@@ -203,5 +259,23 @@ class _MainScreenState extends State<MainScreen> {
         ),
       ],
     );
+  }
+
+  List<Medication> _getTodaysMedications(DateTime date) {
+    final dateOnly = DateTime(date.year, date.month, date.day);
+    return _medications.where((medication) {
+      final reminderDates = _generateReminderDates(
+        medication.startDate,
+        medication.endDate,
+        medication.frequency,
+        medication.time,
+      );
+
+      return reminderDates.any((reminderDate) {
+        return reminderDate.year == dateOnly.year &&
+            reminderDate.month == dateOnly.month &&
+            reminderDate.day == dateOnly.day;
+      });
+    }).toList();
   }
 }
