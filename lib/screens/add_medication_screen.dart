@@ -170,7 +170,13 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
       _selectedSchedule = schedule;
     });
   }
-
+  void _decreasePillCount() {
+    setState(() {
+      if (_pillsCount > 1) {
+        _pillsCount--;
+      }
+    });
+  }
   @override
   Widget build(BuildContext context) {
     return Container(

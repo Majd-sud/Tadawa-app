@@ -30,7 +30,7 @@ class Medication {
   final TimeOfDay time;
   final String schedule;
   final DateTime expirationDate;
-  final int pillsCount;
+   int pillsCount;
   final String notes;
   final String photoUrl;
   final String frequency;

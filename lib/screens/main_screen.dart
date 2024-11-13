@@ -67,6 +67,10 @@ class _MainScreenState extends State<MainScreen> {
       print('No user is currently logged in.');
     }
   }
+   // Method to check if any medication has less than 5 pills
+  bool _hasLowPills() {
+    return _medications.any((medication) => medication.pillsCount < 5);
+  }
 
   Future<void> _scheduleNotifications() async {
     for (var medication in _medications) {
@@ -170,7 +174,34 @@ class _MainScreenState extends State<MainScreen> {
 
     return reminderDates;
   }
+  
+ Future<void> _updatePillsCount(Medication medication, int newPillsCount) async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      try {
+        final docRef = FirebaseFirestore.instance
+            .collection('users')
+            .doc(user.uid)
+            .collection('medications')
+            .doc(medication.id);
 
+        // Update the pill count in Firestore
+        await docRef.update({
+          'pillsCount': newPillsCount,
+        });
+
+        // Show success message
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Pills count updated to $newPillsCount for ${medication.name}')),
+        );
+      } catch (e) {
+        // Handle error
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error updating pills count: $e')),
+        );
+      }
+    }
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -185,6 +216,19 @@ class _MainScreenState extends State<MainScreen> {
           Expanded(
             child: _buildMedicationList(),
           ),
+          // Display warning if any medication has less than 5 pills left
+           if (_hasLowPills())
+            Padding(
+              padding: const EdgeInsets.only(top: 8.0),
+              child: Container(
+                color: Colors.yellow[200],
+                padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
+                child: Text(
+                  'Warning: You have medications with less than 5 pills left!',
+                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+              ),
+            ),
         ],
       ),
     );
@@ -216,6 +260,11 @@ class _MainScreenState extends State<MainScreen> {
               onChanged: (value) {
                 setState(() {
                   medication.takenStatus[_selectedDate] = value ?? false;
+                   // If checkbox is checked, decrease the pill count by 1 and update Firestore
+                  if (value == true && medication.pillsCount > 0) {
+                    medication.pillsCount -= 1;
+                    _updatePillsCount(medication, medication.pillsCount);
+                  }
                 });
               },
             ),
@@ -277,4 +326,4 @@ class _MainScreenState extends State<MainScreen> {
       });
     }).toList();
   }
-}
+}  

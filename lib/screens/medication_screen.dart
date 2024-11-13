@@ -184,8 +184,22 @@ class _MedicationScreenState extends State<MedicationScreen> {
                           'Time: ${medication.time.format(context)}',
                           style: const TextStyle(fontSize: 14),
                         ),
-                      ],
+                         // Warning message for pill count less than 5
+                          if (medication.pillsCount < 5)
+                          Padding(
+                            padding: const EdgeInsets.only(top: 8.0),
+                            child: Text(
+                            'Warning: Pills are running low!',
+                             style: TextStyle(
+                             color: Colors.red,
+                             fontSize: 14,
+                             fontWeight: FontWeight.bold,
+                             ),
+                           ),
+                         ),
+                       ],
                     ),
+
                     trailing: IconButton(
                       icon: const Icon(Icons.edit),
                       onPressed: () async {
