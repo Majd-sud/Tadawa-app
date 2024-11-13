@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:tadawa_app/models/medication.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:intl/intl.dart';
-import 'package:tadawa_app/screens/add_medication_screen.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:tadawa_app/notification_service.dart';
