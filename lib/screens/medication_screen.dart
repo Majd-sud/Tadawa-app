@@ -1,9 +1,14 @@
+
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:tadawa_app/models/medication.dart';
 import 'package:tadawa_app/screens/add_medication_screen.dart';
 import 'package:intl/intl.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:tadawa_app/theme_providor.dart';
+
+import '../theme.dart';
 
 class MedicationScreen extends StatefulWidget {
   const MedicationScreen({super.key});
@@ -156,66 +161,69 @@ class _MedicationScreenState extends State<MedicationScreen> {
                     ),
                   );
                 },
-                child: Card(
-                   color: const Color.fromRGBO(247, 242, 250, 1),
-                  elevation: 2,
-                  margin: const EdgeInsets.symmetric(vertical: 8.0),
-                  child: ListTile(
-                    contentPadding: const EdgeInsets.all(16.0),
-                    title: Text(
-                      medication.name,
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
+                child: Consumer<ThemeProvidor>(builder: (context, value, child) {
+                  return Card(
+                    color: value.themeData==lightMode? Color.fromRGBO(247, 242, 250, 1):Colors.blueGrey.shade800,
+                    elevation: 2,
+                    margin: const EdgeInsets.symmetric(vertical: 8.0),
+                    child: ListTile(
+                      contentPadding: const EdgeInsets.all(16.0),
+                      title: Text(
+                        medication.name,
+                        style:  TextStyle(
+                          fontSize: 18,
+                          color: value.themeData==lightMode?Colors.black:Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
-                    ),
-                    subtitle: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Start Date: ${DateFormat.yMMMd().format(medication.startDate)}',
-                          style: const TextStyle(fontSize: 14),
-                        ),
-                        Text(
-                          'End Date: ${DateFormat.yMMMd().format(medication.endDate)}',
-                          style: const TextStyle(fontSize: 14),
-                        ),
-                        Text(
-                          'Time: ${medication.time.format(context)}',
-                          style: const TextStyle(fontSize: 14),
-                        ),
-                         // Warning message for pill count less than 5
-                          if (medication.pillsCount < 5)
-                          Padding(
-                            padding: const EdgeInsets.only(top: 8.0),
-                            child: Text(
-                            'Warning: Pills are running low!',
-                             style: TextStyle(
-                             color: Colors.red,
-                             fontSize: 14,
-                             fontWeight: FontWeight.bold,
-                             ),
-                           ),
-                         ),
-                       ],
-                    ),
-
-                    trailing: IconButton(
-                      icon: const Icon(Icons.edit),
-                      onPressed: () async {
-                        final updatedMedication =
-                            await Navigator.push<Medication>(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) =>
-                                AddMedicationScreen(medication: medication),
+                      subtitle: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Start Date: ${DateFormat.yMMMd().format(medication.startDate)}',
+                            style:  TextStyle(fontSize: 14,   color: value.themeData==lightMode?Colors.black:Colors.white,),
                           ),
-                        );
-                      },
+                          Text(
+                            'End Date: ${DateFormat.yMMMd().format(medication.endDate)}',
+                            style:  TextStyle(fontSize: 14,   color: value.themeData==lightMode?Colors.black:Colors.white,),
+                          ),
+                          Text(
+                            'Time: ${medication.time.format(context)}',
+                            style:  TextStyle(fontSize: 14,    color: value.themeData==lightMode?Colors.black:Colors.white),
+                          ),
+                          // Warning message for pill count less than 5
+                          if (medication.pillsCount < 5)
+                            const Padding(
+                              padding: EdgeInsets.only(top: 8.0),
+                              child: Text(
+                                'Warning: Pills are running low!',
+                                style: TextStyle(
+                                  color: Colors.red,
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
+
+                      trailing: IconButton(
+                        icon: const Icon(Icons.edit,color: Colors.grey,),
+                        onPressed: () async {
+                          final updatedMedication =
+                          await Navigator.push<Medication>(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  AddMedicationScreen(medication: medication),
+                            ),
+                          );
+                        },
+                      ),
+                      onTap: () {},
                     ),
-                    onTap: () {},
-                  ),
-                ),
+                  );
+                },)
               );
             },
           );

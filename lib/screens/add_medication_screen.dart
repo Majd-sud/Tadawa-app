@@ -170,6 +170,7 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
       _selectedSchedule = schedule;
     });
   }
+
   void _decreasePillCount() {
     setState(() {
       if (_pillsCount > 1) {
@@ -177,66 +178,62 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
       }
     });
   }
+
   @override
   Widget build(BuildContext context) {
-    return Container(
-      color: Colors.white, // Optional: Set a background color
-      child: Column(
-        children: [
-          const SizedBox(height: 20), // Space above the AppBar
-          Expanded(
-            child: Scaffold(
-              appBar: AppBar(
-                backgroundColor: const Color.fromRGBO(255, 254, 247, 255),
-                title: Text(
-                  widget.medication != null ? 'Edit Medication' : 'Add Medication',
-                ),
+    return Scaffold(
+      appBar: AppBar(
+        backgroundColor: const Color.fromRGBO(255, 254, 247, 255),
+        title: Text(
+          widget.medication != null ? 'Edit Medication' : 'Add Medication',
+        ),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: SingleChildScrollView(
+          child: Column(
+            children: [
+              _buildTextField(_nameController, 'Medication Name'),
+              MedicationImage(
+                onImageSelected: (imagePath) {
+                  setState(() {});
+                },
+                initialImagePath: null,
               ),
-              body: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: SingleChildScrollView(
-                  child: Column(
-                    children: [
-                      _buildTextField(_nameController, 'Medication Name'),
-                      MedicationImage(
-                        onImageSelected: (imagePath) {
-                          setState(() {});
-                        },
-                        initialImagePath: null,
-                      ),
-                      _buildDateRow('Start Date', _startDate, () => _presentDatePicker('start')),
-                      _buildDateRow('End Date', _endDate, () => _presentDatePicker('end')),
-                      _buildTimeRow(),
-                      const SizedBox(height: 20),
-                      _buildScheduleButtons(),
-                      const SizedBox(height: 20),
-                      _buildPillCountPicker(),
-                      _buildDateRow('Expiration Date', _expirationDate, () => _presentDatePicker('expiration')),
-                      _buildTextField(_notesController, 'Notes'),
-                      const SizedBox(height: 20),
-                      ElevatedButton(
-                        onPressed: _saveMedication,
-                        style: ElevatedButton.styleFrom(
-                          minimumSize: const Size(double.infinity, 50), 
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(30),
-                          ),
-                          backgroundColor: const Color.fromARGB(255, 46, 161, 132), 
-                          elevation: 5,
-                        ),
-                        child: const Text(
-                          'Save Medication',
-                          style: TextStyle(fontSize: 18, color: Colors.white), // Ensure text is white here
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                    ],
+              _buildDateRow(
+                  'Start Date', _startDate, () => _presentDatePicker('start')),
+              _buildDateRow(
+                  'End Date', _endDate, () => _presentDatePicker('end')),
+              _buildTimeRow(),
+              const SizedBox(height: 20),
+              _buildScheduleButtons(),
+              const SizedBox(height: 20),
+              _buildPillCountPicker(),
+              _buildDateRow('Expiration Date', _expirationDate,
+                  () => _presentDatePicker('expiration')),
+              _buildTextField(_notesController, 'Notes'),
+              const SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: _saveMedication,
+                style: ElevatedButton.styleFrom(
+                  minimumSize: const Size(double.infinity, 50),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(30),
                   ),
+                  backgroundColor: const Color.fromARGB(255, 46, 161, 132),
+                  elevation: 5,
+                ),
+                child: const Text(
+                  'Save Medication',
+                  style: TextStyle(
+                      fontSize: 18,
+                      color: Colors.white), // Ensure text is white here
                 ),
               ),
-            ),
+              const SizedBox(height: 8),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
@@ -299,7 +296,8 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
                 ? const Color.fromARGB(255, 46, 161, 132) // Selected color
                 : Colors.grey,
           ),
-          child: const Text('Daily', style: TextStyle(color: Colors.white)), // White text
+          child: const Text('Daily',
+              style: TextStyle(color: Colors.white)), // White text
         ),
         ElevatedButton(
           onPressed: () => _selectSchedule('Weekly'),
@@ -308,7 +306,8 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
                 ? const Color.fromARGB(255, 46, 161, 132) // Selected color
                 : Colors.grey,
           ),
-          child: const Text('Weekly', style: TextStyle(color: Colors.white)), // White text
+          child: const Text('Weekly',
+              style: TextStyle(color: Colors.white)), // White text
         ),
         ElevatedButton(
           onPressed: () => _selectSchedule('Monthly'),
@@ -317,7 +316,8 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
                 ? const Color.fromARGB(255, 46, 161, 132) // Selected color
                 : Colors.grey,
           ),
-          child: const Text('Monthly', style: TextStyle(color: Colors.white)), // White text
+          child: const Text('Monthly',
+              style: TextStyle(color: Colors.white)), // White text
         ),
       ],
     );

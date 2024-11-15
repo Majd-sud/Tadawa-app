@@ -1,3 +1,4 @@
+
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -229,7 +230,7 @@ class _AppointmentScreenState extends State<AppointmentScreen> {
 
     // Schedule the reminder notification one hour before
     final reminderNotificationDateTime =
-        scheduledNotificationDateTime.subtract(Duration(hours: 1));
+        scheduledNotificationDateTime.subtract(const Duration(hours: 1));
     if (!reminderNotificationDateTime.isBefore(DateTime.now())) {
       await _scheduleSingleNotification(
         notificationId + 1, 
@@ -345,10 +346,10 @@ class _AppointmentScreenState extends State<AppointmentScreen> {
                           vertical: 8, horizontal: 16),
                       elevation: 4,
                       child: ListTile(
-                        leading: const Icon(Icons.event),
+                        leading: const Icon(Icons.event,color: Colors.black,),
                         title: Text(
                           value[index].title,
-                          style: const TextStyle(fontWeight: FontWeight.bold),
+                          style: const TextStyle(fontWeight: FontWeight.bold,color: Colors.black),
                         ),
                         subtitle: Text(
                           'Time: ${value[index].time.format(context)}',
@@ -361,13 +362,15 @@ class _AppointmentScreenState extends State<AppointmentScreen> {
                         onTap: () =>
                             _addOrEditAppointment(appointment: value[index]),
                         trailing: IconButton(
-                          icon: const Icon(Icons.delete),
+                          icon: const Icon(Icons.delete,color: Colors.black,),
                           onPressed: () => _deleteAppointment(value[index]),
                         ),
                       ),
                     );
                   },
                 );
+              
+              
               },
             ),
           )

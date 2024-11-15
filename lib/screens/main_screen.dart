@@ -1,10 +1,14 @@
+
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:tadawa_app/models/medication.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:intl/intl.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:tadawa_app/notification_service.dart';
+import 'package:tadawa_app/theme.dart';
+import 'package:tadawa_app/theme_providor.dart';
 import 'package:timezone/data/latest.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
 import 'package:flutter_timezone/flutter_timezone.dart'; // Import this package
@@ -223,10 +227,10 @@ class _MainScreenState extends State<MainScreen> {
               child: Container(
                 color: Colors.yellow[200],
                 padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
-                child: Text(
+                child: const Text(
                   'Warning: You have medications with less than 5 pills left!',
-                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                ),
+                  style:  TextStyle(fontSize: 16, fontWeight: FontWeight.bold,color: Colors.black,
+                ))
               ),
             ),
         ],
@@ -245,31 +249,42 @@ class _MainScreenState extends State<MainScreen> {
       itemCount: todaysMedications.length,
       itemBuilder: (context, index) {
         final medication = todaysMedications[index];
-        return Card(
-          color: const Color.fromRGBO(247, 242, 250, 1),
-          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          elevation: 4,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: ListTile(
-            title: Text(medication.name),
-            subtitle: Text('Time: ${_formatTime(medication.time)}'),
-            trailing: Checkbox(
-              value: medication.takenStatus[_selectedDate] ?? false,
-              onChanged: (value) {
-                setState(() {
-                  medication.takenStatus[_selectedDate] = value ?? false;
-                   // If checkbox is checked, decrease the pill count by 1 and update Firestore
-                  if (value == true && medication.pillsCount > 0) {
-                    medication.pillsCount -= 1;
-                    _updatePillsCount(medication, medication.pillsCount);
-                  }
-                });
-              },
-            ),
-          ),
-        );
+       return Consumer<ThemeProvidor>(builder: (context, value, child) {
+         return Card(
+             color: value.themeData==lightMode? Color.fromRGBO(247, 242, 250, 1):Colors.blueGrey.shade800,
+             margin:
+             const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+             elevation: 4,
+             shape: RoundedRectangleBorder(
+               borderRadius: BorderRadius.circular(12),
+             ),
+             child: ListTile(
+               title: Text(
+                 medication.name,
+                 style:  TextStyle(color: value.themeData==lightMode?Colors.black:Colors.white),
+               ),
+               subtitle: Text(
+                 'Time: ${medication.time.format(context)}',
+                 style:  TextStyle(color: value.themeData==lightMode?Colors.black:Colors.white),
+               ),
+               trailing: Checkbox(
+                 activeColor:  value.themeData==lightMode?Colors.black:Colors.white,
+                 // focusColor: value.themeData==lightMode?Colors.black:Colors.white,
+                 // hoverColor: value.themeData==lightMode?Colors.black:Colors.white,
+                 // checkColor:  value.themeData==lightMode?Colors.black:Colors.white,
+                 side:  BorderSide(color:  value.themeData==lightMode?Colors.black:Colors.white),
+                 value: medication.takenStatus[_selectedDate] ?? false,
+                 onChanged: (value) {
+                   setState(() {
+                     medication.takenStatus[_selectedDate] =
+                         value ?? false;
+                   });
+                 },
+               ),
+             ));
+       },);
+     
+     
       },
     );
   }

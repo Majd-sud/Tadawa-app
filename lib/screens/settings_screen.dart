@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:provider/provider.dart';
 import 'package:tadawa_app/screens/auth_screen.dart';
 import 'package:tadawa_app/screens/profile_screen.dart';
+import 'package:tadawa_app/theme.dart';
+
+import '../theme_providor.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -56,76 +60,90 @@ class _SettingsScreenState extends State<SettingsScreen> {
         children: [
           Expanded(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Card(
-                    color: const Color.fromRGBO(247, 242, 250, 1),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    elevation: 3,
-                    margin: const EdgeInsets.only(bottom: 16),
-                    child: ListTile(
-                      contentPadding: const EdgeInsets.all(16),
-                      leading: CircleAvatar(
-                        radius: 28,
-                        backgroundImage: _imageUrl.isNotEmpty
-                            ? NetworkImage(_imageUrl)
-                            : const AssetImage('assets/images/default_profile.jpg') as ImageProvider,
-                      ),
-                      title: Text(
-                        _username.isNotEmpty ? _username : 'User Name',
-                        style: const TextStyle(
-                          fontWeight: FontWeight.w600,
-                          fontSize: 16,
-                          color: Colors.black87,
+                padding: const EdgeInsets.all(16),
+                child: Consumer<ThemeProvidor>(
+                  builder: (context, value, child) => Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Card(
+                        color: value.themeData == lightMode
+                            ? Color.fromRGBO(247, 242, 250, 1)
+                            : Colors.blueGrey.shade800,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        elevation: 3,
+                        margin: const EdgeInsets.only(bottom: 16),
+                        child: ListTile(
+                          // contentPadding: const EdgeInsets.all(16),
+                          leading: CircleAvatar(
+                            radius: 20,
+                            backgroundImage: _imageUrl.isNotEmpty
+                                ? NetworkImage(_imageUrl)
+                                : const AssetImage(
+                                        'assets/images/default_profile.jpg')
+                                    as ImageProvider,
+                          ),
+                          title: Text(
+                            _username.isNotEmpty ? _username : 'User Name',
+                            style:  TextStyle(
+                                fontWeight: FontWeight.w600,
+                                fontSize: 16,
+                              color: value.themeData == lightMode ?Colors.black87:Colors.white,
+                                // color: Colors.black87,
+                                ),
+                          ),
+                          subtitle: Text(
+                            _email.isNotEmpty ? _email : 'Email Address',
+                            style:  TextStyle( color: value.themeData == lightMode ?Colors.black87:Colors.white,),
+                          ),
+                          trailing: const Icon(Icons.chevron_right,
+                              color: Colors.grey),
+                          onTap: () {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (context) => const ProfileScreen(),
+                              ),
+                            );
+                          },
                         ),
                       ),
-                      subtitle: Text(
-                        _email.isNotEmpty ? _email : 'Email Address',
-                        style: const TextStyle(color: Colors.black54),
+                      const Text('Preferences', style: TextStyle(fontSize: 20)),
+                      _buildSettingsListTile(
+                        icon: Icons.nightlight_round,
+                        title: 'Appearance',
+                        subtitle: themeSubtitle(context),
+                        // subtitle: 'Light',
+                        iconColor: const Color.fromARGB(255, 134, 134, 134),
+                        onTap: () {
+                          context.read<ThemeProvidor>().toggleTheme();
+                        },
                       ),
-                      trailing: const Icon(Icons.chevron_right, color: Colors.grey),
-                      onTap: () {
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (context) => const ProfileScreen(),
-                          ),
-                        );
-                      },
-                    ),
+                      _buildSettingsListTile(
+                        icon: Icons.language,
+                        title: 'Language',
+                        subtitle: 'English',
+                        iconColor: const Color.fromARGB(255, 134, 134, 134),
+                        onTap: () {},
+                      ),
+                      _buildSettingsListTile(
+                        icon: Icons.notifications,
+                        title: 'Notification',
+                        subtitle: 'Manage notifications',
+                        iconColor: const Color.fromARGB(255, 134, 134, 134),
+                        onTap: () {
+                          _showNotificationDialog();
+                        },
+                      ),
+                      const SizedBox(
+                          height:
+                              16), // Add space between Preferences and Logout
+                      Center(
+                          child:
+                              _buildLogoutButton(context)), // Center the button
+                    ],
                   ),
-                  const Text('Preferences', style: TextStyle(fontSize: 20)),
-                  _buildSettingsListTile(
-                    icon: Icons.nightlight_round,
-                    title: 'Appearance',
-                    subtitle: 'Light',
-                    iconColor: const Color.fromARGB(255, 134, 134, 134),
-                    onTap: () {},
-                  ),
-                  _buildSettingsListTile(
-                    icon: Icons.language,
-                    title: 'Language',
-                    subtitle: 'English',
-                    iconColor: const Color.fromARGB(255, 134, 134, 134),
-                    onTap: () {},
-                  ),
-                  _buildSettingsListTile(
-                    icon: Icons.notifications,
-                    title: 'Notification',
-                    subtitle: 'Manage notifications',
-                    iconColor: const Color.fromARGB(255, 134, 134, 134),
-                    onTap: () {
-                      _showNotificationDialog();
-                    },
-                  ),
-                  const SizedBox(height: 16), // Add space between Preferences and Logout
-                  Center(child: _buildLogoutButton(context)), // Center the button
-                ],
-              ),
-            ),
+                )),
           ),
         ],
       ),
@@ -139,34 +157,42 @@ class _SettingsScreenState extends State<SettingsScreen> {
     required Color iconColor,
     required VoidCallback onTap,
   }) {
-    return Card(
-      color: const Color.fromRGBO(247, 242, 250, 1),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
-      elevation: 1,
-      margin: const EdgeInsets.symmetric(vertical: 8.0),
-      child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 16.0),
-        leading: CircleAvatar(
-          backgroundColor: iconColor.withOpacity(0.15),
-          radius: 24,
-          child: Icon(icon, color: iconColor, size: 22),
-        ),
-        title: Text(
-          title,
-          style: const TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w500,
-            color: Colors.black87,
+    return Consumer<ThemeProvidor>(
+      builder: (context, value, child) {
+        return Card(
+          color: value.themeData == lightMode
+              ? Color.fromRGBO(247, 242, 250, 1)
+              : Colors.blueGrey.shade800,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
           ),
-        ),
-        subtitle: subtitle != null
-            ? Text(subtitle, style: const TextStyle(color: Colors.black54, fontSize: 13))
-            : null,
-        trailing: const Icon(Icons.chevron_right, color: Colors.grey),
-        onTap: onTap,
-      ),
+          elevation: 1,
+          margin: const EdgeInsets.symmetric(vertical: 8.0),
+          child: ListTile(
+            contentPadding:
+                const EdgeInsets.symmetric(vertical: 12.0, horizontal: 16.0),
+            leading: CircleAvatar(
+              backgroundColor: value.themeData==lightMode?iconColor.withOpacity(0.15):Colors.white,
+              radius: 24,
+              child: Icon(icon, color: iconColor, size: 22),
+            ),
+            title: Text(
+              title,
+              style:  TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+                color: value.themeData == lightMode ?Colors.black87:Colors.white,
+              ),
+            ),
+            subtitle: subtitle != null
+                ? Text(subtitle,
+                    style:  TextStyle(  color: value.themeData == lightMode ?Colors.black87:Colors.white, fontSize: 13))
+                : null,
+            trailing: const Icon(Icons.chevron_right, color: Colors.grey),
+            onTap: onTap,
+          ),
+        );
+      },
     );
   }
 
@@ -200,7 +226,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          backgroundColor: const Color.fromRGBO(247, 242, 250, 1), // Light background color
+          backgroundColor:
+              const Color.fromRGBO(247, 242, 250, 1), // Light background color
           title: const Text(
             'Notification Settings',
             style: TextStyle(
@@ -209,9 +236,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
               color: Colors.black87,
             ),
           ),
-          content: SingleChildScrollView(
+          content: const SingleChildScrollView(
             child: ListBody(
-              children: const <Widget>[
+              children: <Widget>[
                 Text(
                   'Please make sure to open:\n',
                   style: TextStyle(
@@ -248,7 +275,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 'OK',
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
-                  color: Color.fromARGB(255, 46, 161, 132), // Custom color for the button
+                  color: Color.fromARGB(
+                      255, 46, 161, 132), // Custom color for the button
                 ),
               ),
             ),
@@ -257,4 +285,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
       },
     );
   }
+}
+
+String themeSubtitle(BuildContext context) {
+  return context.watch<ThemeProvidor>().themeData.brightness == Brightness.light
+      ? 'Light'
+      : 'Dark';
 }
