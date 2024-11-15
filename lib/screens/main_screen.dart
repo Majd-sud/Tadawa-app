@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:tadawa_app/models/medication.dart';
@@ -193,11 +192,6 @@ class _MainScreenState extends State<MainScreen> {
         await docRef.update({
           'pillsCount': newPillsCount,
         });
-
-        // Show success message
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Pills count updated to $newPillsCount for ${medication.name}')),
-        );
       } catch (e) {
         // Handle error
         ScaffoldMessenger.of(context).showSnackBar(
@@ -276,9 +270,12 @@ class _MainScreenState extends State<MainScreen> {
                  value: medication.takenStatus[_selectedDate] ?? false,
                  onChanged: (value) {
                    setState(() {
-                     medication.takenStatus[_selectedDate] =
-                         value ?? false;
-                   });
+                  medication.takenStatus[_selectedDate] = value ?? false;
+                  if (value == true && medication.pillsCount > 0) {
+                    medication.pillsCount -= 1;
+                    _updatePillsCount(medication, medication.pillsCount);
+                  }
+                });
                  },
                ),
              ));
