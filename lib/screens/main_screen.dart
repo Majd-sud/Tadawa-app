@@ -70,7 +70,8 @@ class _MainScreenState extends State<MainScreen> {
       print('No user is currently logged in.');
     }
   }
-   // Method to check if any medication has less than 5 pills
+
+  // Method to check if any medication has less than 5 pills
   bool _hasLowPills() {
     return _medications.any((medication) => medication.pillsCount < 5);
   }
@@ -108,7 +109,41 @@ class _MainScreenState extends State<MainScreen> {
         // Schedule the notification
         await _scheduleNotification(medication, localDateTime);
       }
+
+      // Schedule an expiry alert if the medication is not expired
+      if (!medication.isExpired()) {
+        await _scheduleExpiryNotification(medication);
+      }
     }
+  }
+
+  Future<void> _scheduleExpiryNotification(Medication medication) async {
+    final tz.TZDateTime localDateTime =
+        tz.TZDateTime.from(medication.expirationDate, tz.local);
+
+    // Ensure the scheduled date is in the future
+    if (localDateTime.isBefore(tz.TZDateTime.now(tz.local))) {
+      return; // Skip if the medication is already expired
+    }
+
+    await NotificationService.flutterLocalNotificationsPlugin.zonedSchedule(
+      medication.id.hashCode ^ medication.expirationDate.millisecondsSinceEpoch,
+      'Medication Expiry Alert',
+      'Your medication "${medication.name}" is about to expire!',
+      localDateTime.subtract(Duration(days: 1)), //
+      const NotificationDetails(
+        android: AndroidNotificationDetails(
+          'medication_channel',
+          'Medication Expiry Alerts',
+          channelDescription: 'Channel for medication expiry alerts',
+          importance: Importance.max,
+          priority: Priority.high,
+        ),
+      ),
+      androidScheduleMode: AndroidScheduleMode.exact,
+      uiLocalNotificationDateInterpretation:
+          UILocalNotificationDateInterpretation.absoluteTime,
+    );
   }
 
   Future<void> _scheduleNotification(
@@ -177,8 +212,9 @@ class _MainScreenState extends State<MainScreen> {
 
     return reminderDates;
   }
-  
- Future<void> _updatePillsCount(Medication medication, int newPillsCount) async {
+
+  Future<void> _updatePillsCount(
+      Medication medication, int newPillsCount) async {
     final user = FirebaseAuth.instance.currentUser;
     if (user != null) {
       try {
@@ -200,6 +236,7 @@ class _MainScreenState extends State<MainScreen> {
       }
     }
   }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -214,18 +251,42 @@ class _MainScreenState extends State<MainScreen> {
           Expanded(
             child: _buildMedicationList(),
           ),
-          // Display warning if any medication has less than 5 pills left
-           if (_hasLowPills())
+
+          // Check if any of the medications in the _medications list have an expiration date
+          // that is before the current date plus 7 days
+          if (_medications.any((medication) =>
+              medication.expirationDate
+                  .isBefore(DateTime.now().add(Duration(days: 7))) &&
+              !medication.isExpired()))
             Padding(
               padding: const EdgeInsets.only(top: 8.0),
               child: Container(
-                color: Colors.yellow[200],
-                padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
-                child: const Text(
-                  'Warning: You have medications with less than 5 pills left!',
-                  style:  TextStyle(fontSize: 16, fontWeight: FontWeight.bold,color: Colors.black,
-                ))
+                color: Colors.orange[200],
+                padding:
+                    const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
+                child: Text(
+                  'Warning: You have medications expiring within the next week!',
+                  style: const TextStyle(
+                      fontSize: 16, fontWeight: FontWeight.bold),
+                ),
               ),
+            ),
+
+          // Display warning if any medication has less than 5 pills left
+          if (_hasLowPills())
+            Padding(
+              padding: const EdgeInsets.only(top: 8.0),
+              child: Container(
+                  color: Colors.yellow[200],
+                  padding:
+                      const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
+                  child: const Text(
+                      'Warning: You have medications with less than 5 pills left!',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black,
+                      ))),
             ),
         ],
       ),
@@ -243,45 +304,57 @@ class _MainScreenState extends State<MainScreen> {
       itemCount: todaysMedications.length,
       itemBuilder: (context, index) {
         final medication = todaysMedications[index];
-       return Consumer<ThemeProvidor>(builder: (context, value, child) {
-         return Card(
-             color: value.themeData==lightMode? Color.fromRGBO(247, 242, 250, 1):Colors.blueGrey.shade800,
-             margin:
-             const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-             elevation: 4,
-             shape: RoundedRectangleBorder(
-               borderRadius: BorderRadius.circular(12),
-             ),
-             child: ListTile(
-               title: Text(
-                 medication.name,
-                 style:  TextStyle(color: value.themeData==lightMode?Colors.black:Colors.white),
-               ),
-               subtitle: Text(
-                 'Time: ${medication.time.format(context)}',
-                 style:  TextStyle(color: value.themeData==lightMode?Colors.black:Colors.white),
-               ),
-               trailing: Checkbox(
-                 activeColor:  value.themeData==lightMode?Colors.black:Colors.white,
-                 // focusColor: value.themeData==lightMode?Colors.black:Colors.white,
-                 // hoverColor: value.themeData==lightMode?Colors.black:Colors.white,
-                 // checkColor:  value.themeData==lightMode?Colors.black:Colors.white,
-                 side:  BorderSide(color:  value.themeData==lightMode?Colors.black:Colors.white),
-                 value: medication.takenStatus[_selectedDate] ?? false,
-                 onChanged: (value) {
-                   setState(() {
-                  medication.takenStatus[_selectedDate] = value ?? false;
-                  if (value == true && medication.pillsCount > 0) {
-                    medication.pillsCount -= 1;
-                    _updatePillsCount(medication, medication.pillsCount);
-                  }
-                });
-                 },
-               ),
-             ));
-       },);
-     
-     
+        return Consumer<ThemeProvidor>(
+          builder: (context, value, child) {
+            return Card(
+                color: value.themeData == lightMode
+                    ? Color.fromRGBO(247, 242, 250, 1)
+                    : Colors.blueGrey.shade800,
+                margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                elevation: 4,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: ListTile(
+                  title: Text(
+                    medication.name,
+                    style: TextStyle(
+                        color: value.themeData == lightMode
+                            ? Colors.black
+                            : Colors.white),
+                  ),
+                  subtitle: Text(
+                    'Time: ${medication.time.format(context)}',
+                    style: TextStyle(
+                        color: value.themeData == lightMode
+                            ? Colors.black
+                            : Colors.white),
+                  ),
+                  trailing: Checkbox(
+                    activeColor: value.themeData == lightMode
+                        ? Colors.black
+                        : Colors.white,
+                    // focusColor: value.themeData==lightMode?Colors.black:Colors.white,
+                    // hoverColor: value.themeData==lightMode?Colors.black:Colors.white,
+                    // checkColor:  value.themeData==lightMode?Colors.black:Colors.white,
+                    side: BorderSide(
+                        color: value.themeData == lightMode
+                            ? Colors.black
+                            : Colors.white),
+                    value: medication.takenStatus[_selectedDate] ?? false,
+                    onChanged: (value) {
+                      setState(() {
+                        medication.takenStatus[_selectedDate] = value ?? false;
+                        if (value == true && medication.pillsCount > 0) {
+                          medication.pillsCount -= 1;
+                          _updatePillsCount(medication, medication.pillsCount);
+                        }
+                      });
+                    },
+                  ),
+                ));
+          },
+        );
       },
     );
   }
@@ -338,4 +411,4 @@ class _MainScreenState extends State<MainScreen> {
       });
     }).toList();
   }
-}  
+}

@@ -204,8 +204,21 @@ class _MedicationScreenState extends State<MedicationScreen> {
                                 ),
                               ),
                             ),
-                        ],
-                      ),
+                           // Warning message for expiry ******
+                           if (medication.expirationDate.isBefore(DateTime.now().add(const Duration(days: 7))) && !medication.isExpired())
+                                const Padding(
+                                 padding: EdgeInsets.only(top: 8.0),
+                                    child: Text(
+                                    'Warning: This medication will expire soon!',
+                                     style: TextStyle(
+                                     color: Color.fromARGB(186, 255, 72, 0),
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.bold,
+                                  ),
+                               ),
+                             ),
+                           ],
+                          ),
 
                       trailing: IconButton(
                         icon: const Icon(Icons.edit,color: Colors.grey,),

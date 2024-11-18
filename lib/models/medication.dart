@@ -23,13 +23,18 @@ class Medication {
   })  : id = id ?? uuid.v4(), // Generate a new ID if not provided
         takenStatus = takenStatus ?? {};
 
+       bool isExpired() {
+    return DateTime.now().isAfter(expirationDate);
+  }
+
+
   final String id;
   final String name;
   final DateTime startDate;
   final DateTime endDate;
   final TimeOfDay time;
   final String schedule;
-  final DateTime expirationDate;
+  final DateTime expirationDate; //expiry
    int pillsCount;
   final String notes;
   final String photoUrl;
