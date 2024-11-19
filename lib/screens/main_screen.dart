@@ -8,9 +8,10 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:tadawa_app/notification_service.dart';
 import 'package:tadawa_app/theme.dart';
 import 'package:tadawa_app/theme_providor.dart';
+import 'package:tadawa_app/generated/l10n.dart';
 import 'package:timezone/data/latest.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
-import 'package:flutter_timezone/flutter_timezone.dart'; // Import this package
+import 'package:flutter_timezone/flutter_timezone.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -27,12 +28,8 @@ class _MainScreenState extends State<MainScreen> {
   void initState() {
     super.initState();
     tz.initializeTimeZones();
-
-    // Set the local time zone
     _setLocalTimeZone();
-
-    NotificationService
-        .initialize(); // Ensure notification service is initialized
+    NotificationService.initialize();
     _fetchMedications();
   }
 
@@ -58,28 +55,21 @@ class _MainScreenState extends State<MainScreen> {
               .toList();
         });
 
-        print(
-            'Fetched medications: ${_medications.map((m) => m.name).toList()}');
-
-        // Schedule notifications for each medication
         await _scheduleNotifications();
       } catch (e) {
-        print('Error fetching medications: $e');
+        print(S.of(context).errorFetchingMedications + ": $e");
       }
     } else {
-      print('No user is currently logged in.');
+      print(S.of(context).defaultUserName);
     }
   }
 
-  // Method to check if any medication has less than 5 pills
   bool _hasLowPills() {
     return _medications.any((medication) => medication.pillsCount < 5);
   }
 
   Future<void> _scheduleNotifications() async {
     for (var medication in _medications) {
-      print('Scheduling notifications for: ${medication.name}');
-
       final List<DateTime> reminderDates = _generateReminderDates(
         medication.startDate,
         medication.endDate,
@@ -93,24 +83,17 @@ class _MainScreenState extends State<MainScreen> {
           reminderDate.year,
           reminderDate.month,
           reminderDate.day,
-          medication.time.hour % 24, // Ensure correct hour format
+          medication.time.hour,
           medication.time.minute,
         );
 
-        print('Attempting to schedule for: $localDateTime');
-
-        // Ensure the scheduled date is in the future
         if (localDateTime.isBefore(tz.TZDateTime.now(tz.local))) {
-          print(
-              'Scheduled time is in the past. Skipping scheduling for: $localDateTime');
           continue;
         }
 
-        // Schedule the notification
         await _scheduleNotification(medication, localDateTime);
       }
 
-      // Schedule an expiry alert if the medication is not expired
       if (!medication.isExpired()) {
         await _scheduleExpiryNotification(medication);
       }
@@ -121,16 +104,15 @@ class _MainScreenState extends State<MainScreen> {
     final tz.TZDateTime localDateTime =
         tz.TZDateTime.from(medication.expirationDate, tz.local);
 
-    // Ensure the scheduled date is in the future
     if (localDateTime.isBefore(tz.TZDateTime.now(tz.local))) {
-      return; // Skip if the medication is already expired
+      return;
     }
 
     await NotificationService.flutterLocalNotificationsPlugin.zonedSchedule(
       medication.id.hashCode ^ medication.expirationDate.millisecondsSinceEpoch,
-      'Medication Expiry Alert',
-      'Your medication "${medication.name}" is about to expire!',
-      localDateTime.subtract(Duration(days: 1)), //
+      S.of(context).warningExpirationSoon,
+      '${S.of(context).medicationName}: "${medication.name}"',
+      localDateTime.subtract(Duration(days: 1)),
       const NotificationDetails(
         android: AndroidNotificationDetails(
           'medication_channel',
@@ -148,16 +130,11 @@ class _MainScreenState extends State<MainScreen> {
 
   Future<void> _scheduleNotification(
       Medication medication, tz.TZDateTime localDateTime) async {
-    int notificationId =
-        medication.id.hashCode ^ localDateTime.millisecondsSinceEpoch;
-    notificationId =
-        notificationId.abs() % (1 << 31); // Ensure it fits in the 32-bit range
-
     try {
       await NotificationService.flutterLocalNotificationsPlugin.zonedSchedule(
-        notificationId,
-        'Medication Reminder',
-        'Time to take your medication: ${medication.name}',
+        medication.id.hashCode ^ localDateTime.millisecondsSinceEpoch,
+        S.of(context).notification,
+        '${S.of(context).time}: ${medication.name}',
         localDateTime,
         const NotificationDetails(
           android: AndroidNotificationDetails(
@@ -172,9 +149,8 @@ class _MainScreenState extends State<MainScreen> {
         uiLocalNotificationDateInterpretation:
             UILocalNotificationDateInterpretation.absoluteTime,
       );
-      print('Scheduled notification for: ${medication.name} at $localDateTime');
     } catch (e) {
-      print('Error scheduling notification: $e');
+      print(S.of(context).errorFetchingMedications + ": $e");
     }
   }
 
@@ -184,15 +160,13 @@ class _MainScreenState extends State<MainScreen> {
     DateTime currentDate = start;
 
     while (currentDate.isBefore(end) || currentDate.isAtSameMomentAs(end)) {
-      final dateTimeWithMedTime = DateTime(
+      reminderDates.add(DateTime(
         currentDate.year,
         currentDate.month,
         currentDate.day,
-        medicationTime.hour % 24, // Correctly handle 12 AM / 12 PM
+        medicationTime.hour,
         medicationTime.minute,
-      );
-
-      reminderDates.add(dateTimeWithMedTime);
+      ));
 
       switch (frequency) {
         case 'Daily':
@@ -213,36 +187,12 @@ class _MainScreenState extends State<MainScreen> {
     return reminderDates;
   }
 
-  Future<void> _updatePillsCount(
-      Medication medication, int newPillsCount) async {
-    final user = FirebaseAuth.instance.currentUser;
-    if (user != null) {
-      try {
-        final docRef = FirebaseFirestore.instance
-            .collection('users')
-            .doc(user.uid)
-            .collection('medications')
-            .doc(medication.id);
-
-        // Update the pill count in Firestore
-        await docRef.update({
-          'pillsCount': newPillsCount,
-        });
-      } catch (e) {
-        // Handle error
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error updating pills count: $e')),
-        );
-      }
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: const Color.fromRGBO(255, 254, 247, 255),
-        title: const Text('Medications Overview'),
+        title: Text(S.of(context).medications),
       ),
       body: Column(
         children: [
@@ -251,12 +201,9 @@ class _MainScreenState extends State<MainScreen> {
           Expanded(
             child: _buildMedicationList(),
           ),
-
-          // Check if any of the medications in the _medications list have an expiration date
-          // that is before the current date plus 7 days
           if (_medications.any((medication) =>
               medication.expirationDate
-                  .isBefore(DateTime.now().add(Duration(days: 7))) &&
+                  .isBefore(DateTime.now().add(const Duration(days: 7))) &&
               !medication.isExpired()))
             Padding(
               padding: const EdgeInsets.only(top: 8.0),
@@ -265,28 +212,28 @@ class _MainScreenState extends State<MainScreen> {
                 padding:
                     const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
                 child: Text(
-                  'Warning: You have medications expiring within the next week!',
+                  S.of(context).warningExpirationSoon,
                   style: const TextStyle(
                       fontSize: 16, fontWeight: FontWeight.bold),
                 ),
               ),
             ),
-
-          // Display warning if any medication has less than 5 pills left
           if (_hasLowPills())
             Padding(
               padding: const EdgeInsets.only(top: 8.0),
               child: Container(
-                  color: Colors.yellow[200],
-                  padding:
-                      const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
-                  child: const Text(
-                      'Warning: You have medications with less than 5 pills left!',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black,
-                      ))),
+                color: Colors.yellow[200],
+                padding:
+                    const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
+                child: Text(
+                  S.of(context).warningPillsLow,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black,
+                  ),
+                ),
+              ),
             ),
         ],
       ),
@@ -297,73 +244,42 @@ class _MainScreenState extends State<MainScreen> {
     final todaysMedications = _getTodaysMedications(_selectedDate);
 
     if (todaysMedications.isEmpty) {
-      return const Center(child: Text('No medications for this date.'));
+      return Center(
+        child: Text(S.of(context).errorFetchingMedications),
+      );
     }
 
     return ListView.builder(
       itemCount: todaysMedications.length,
       itemBuilder: (context, index) {
         final medication = todaysMedications[index];
-        return Consumer<ThemeProvidor>(
-          builder: (context, value, child) {
-            return Card(
-                color: value.themeData == lightMode
-                    ? Color.fromRGBO(247, 242, 250, 1)
-                    : Colors.blueGrey.shade800,
-                margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                elevation: 4,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: ListTile(
-                  title: Text(
-                    medication.name,
-                    style: TextStyle(
-                        color: value.themeData == lightMode
-                            ? Colors.black
-                            : Colors.white),
-                  ),
-                  subtitle: Text(
-                    'Time: ${medication.time.format(context)}',
-                    style: TextStyle(
-                        color: value.themeData == lightMode
-                            ? Colors.black
-                            : Colors.white),
-                  ),
-                  trailing: Checkbox(
-                    activeColor: value.themeData == lightMode
-                        ? Colors.black
-                        : Colors.white,
-                    // focusColor: value.themeData==lightMode?Colors.black:Colors.white,
-                    // hoverColor: value.themeData==lightMode?Colors.black:Colors.white,
-                    // checkColor:  value.themeData==lightMode?Colors.black:Colors.white,
-                    side: BorderSide(
-                        color: value.themeData == lightMode
-                            ? Colors.black
-                            : Colors.white),
-                    value: medication.takenStatus[_selectedDate] ?? false,
-                    onChanged: (value) {
-                      setState(() {
-                        medication.takenStatus[_selectedDate] = value ?? false;
-                        if (value == true && medication.pillsCount > 0) {
-                          medication.pillsCount -= 1;
-                          _updatePillsCount(medication, medication.pillsCount);
-                        }
-                      });
-                    },
-                  ),
-                ));
-          },
+        return Card(
+          color: const Color.fromRGBO(247, 242, 250, 1),
+          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          elevation: 4,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: ListTile(
+            title: Text(medication.name),
+            subtitle: Text(
+              '${S.of(context).time}: ${medication.time.format(context)}',
+            ),
+            trailing: Checkbox(
+              value: medication.takenStatus[_selectedDate] ?? false,
+              onChanged: (value) {
+                setState(() {
+                  medication.takenStatus[_selectedDate] = value ?? false;
+                  if (value == true && medication.pillsCount > 0) {
+                    medication.pillsCount -= 1;
+                  }
+                });
+              },
+            ),
+          ),
         );
       },
     );
-  }
-
-  String _formatTime(TimeOfDay time) {
-    final hour = time.hour % 12 == 0 ? 12 : time.hour % 12;
-    final minute = time.minute.toString().padLeft(2, '0');
-    final amPm = time.hour >= 12 ? 'PM' : 'AM';
-    return '$hour:$minute $amPm';
   }
 
   Widget _buildDateSelector() {
@@ -395,7 +311,6 @@ class _MainScreenState extends State<MainScreen> {
   }
 
   List<Medication> _getTodaysMedications(DateTime date) {
-    final dateOnly = DateTime(date.year, date.month, date.day);
     return _medications.where((medication) {
       final reminderDates = _generateReminderDates(
         medication.startDate,
@@ -405,9 +320,9 @@ class _MainScreenState extends State<MainScreen> {
       );
 
       return reminderDates.any((reminderDate) {
-        return reminderDate.year == dateOnly.year &&
-            reminderDate.month == dateOnly.month &&
-            reminderDate.day == dateOnly.day;
+        return reminderDate.year == date.year &&
+            reminderDate.month == date.month &&
+            reminderDate.day == date.day;
       });
     }).toList();
   }
