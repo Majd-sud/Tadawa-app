@@ -10,6 +10,8 @@ import 'firebase_options.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:timezone/data/latest.dart' as tz;
 import 'package:permission_handler/permission_handler.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:tadawa_app/generated/l10n.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -20,24 +22,26 @@ void main() async {
 
   // Request notification permission
   await _requestNotificationPermission();
+
   runApp(
-    ChangeNotifierProvider(
-      create: (context) => ThemeProvidor(),
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (context) => ThemeProvidor()),
+      ],
       child: const MyApp(),
     ),
   );
 }
 
 Future<void> _requestNotificationPermission() async {
-  // Request notification permission
   final status = await Permission.notification.request();
   if (status.isGranted) {
     print('Notification permission granted');
   } else if (status.isDenied) {
     print('Notification permission denied');
   } else if (status.isPermanentlyDenied) {
-    // Prompt user to open app settings
-    print('Notification permission permanently denied. Please enable it in the app settings.');
+    print(
+        'Notification permission permanently denied. Please enable it in the app settings.');
     openAppSettings();
   }
 }
@@ -50,42 +54,44 @@ class MyApp extends StatelessWidget {
     final List<Medication> medications = [];
     final List<Appointment> initialAppointments = [];
 
-    return Consumer<ThemeProvidor>(
-      builder: (context, themeProvider, child) {
-
-        return MaterialApp(
-          debugShowCheckedModeBanner: false,
-          title: 'Tadawa',
-          theme: themeProvider.themeData,
-          // theme: themeProvider.themeData),
-
-          //     .copyWith(
-          //   colorScheme: ColorScheme.fromSeed(
-          //     seedColor: const Color.fromARGB(255, 46, 161, 132),
-          //   ),
-          // ),
-          home: StreamBuilder<User?>(
-            stream: FirebaseAuth.instance.authStateChanges(),
-            builder: (ctx, userSnapshot) {
-              if (userSnapshot.connectionState == ConnectionState.waiting) {
-                return const Center(child: CircularProgressIndicator());
-              }
-              if (userSnapshot.hasData) {
-                return SwitchScreen(
-                  // Pass any required arguments to SwitchScreen
-                  medications:
-                  medications, // Make sure you have these variables defined
-                  initialAppointments: initialAppointments,
-                );
-              }
-              return const AuthScreen(); // If no user is logged in
-            },
-          ),
-        );
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      title: 'Tadawa',
+      theme: context.watch<ThemeProvidor>().themeData,
+      localizationsDelegates: [
+        S.delegate, // Generated localization delegate
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: S.delegate.supportedLocales,
+      localeResolutionCallback: (locale, supportedLocales) {
+        for (var supportedLocale in supportedLocales) {
+          if (supportedLocale.languageCode == locale?.languageCode &&
+              supportedLocale.countryCode == locale?.countryCode) {
+            return supportedLocale;
+          }
+        }
+        return supportedLocales
+            .first; // Default to the first locale if no match
       },
+      home: StreamBuilder<User?>(
+        stream: FirebaseAuth.instance.authStateChanges(),
+        builder: (ctx, userSnapshot) {
+          if (userSnapshot.connectionState == ConnectionState.waiting) {
+            return const Scaffold(
+              body: Center(child: CircularProgressIndicator()),
+            );
+          }
+          if (userSnapshot.hasData) {
+            return SwitchScreen(
+              medications: medications,
+              initialAppointments: initialAppointments,
+            );
+          }
+          return const AuthScreen();
+        },
+      ),
     );
-
   }
 }
-
-

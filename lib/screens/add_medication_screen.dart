@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:tadawa_app/widgets/medication_image.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:tadawa_app/generated/l10n.dart';
 
 class AddMedicationScreen extends StatefulWidget {
   final Medication? medication;
@@ -107,7 +108,7 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
         _time == null ||
         _selectedSchedule == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please fill in all fields.')),
+        SnackBar(content: Text(S.of(context).pleaseFillAllFields)),
       );
       return;
     }
@@ -121,7 +122,7 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
       notes: _notesController.text,
       pillsCount: _pillsCount,
       time: _time!,
-      frequency: _selectedSchedule ?? 'Daily',
+      frequency: _selectedSchedule ?? S.of(context).daily,
     );
 
     final user = FirebaseAuth.instance.currentUser;
@@ -185,7 +186,9 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
       appBar: AppBar(
         backgroundColor: const Color.fromRGBO(255, 254, 247, 255),
         title: Text(
-          widget.medication != null ? 'Edit Medication' : 'Add Medication',
+          widget.medication != null
+              ? S.of(context).editMedication
+              : S.of(context).addMedication,
         ),
       ),
       body: Padding(
@@ -193,25 +196,25 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
         child: SingleChildScrollView(
           child: Column(
             children: [
-              _buildTextField(_nameController, 'Medication Name'),
+              _buildTextField(_nameController, S.of(context).medicationName),
               MedicationImage(
                 onImageSelected: (imagePath) {
                   setState(() {});
                 },
                 initialImagePath: null,
               ),
-              _buildDateRow(
-                  'Start Date', _startDate, () => _presentDatePicker('start')),
-              _buildDateRow(
-                  'End Date', _endDate, () => _presentDatePicker('end')),
+              _buildDateRow(S.of(context).startDate, _startDate,
+                  () => _presentDatePicker('start')),
+              _buildDateRow(S.of(context).endDate, _endDate,
+                  () => _presentDatePicker('end')),
               _buildTimeRow(),
               const SizedBox(height: 20),
               _buildScheduleButtons(),
               const SizedBox(height: 20),
               _buildPillCountPicker(),
-              _buildDateRow('Expiration Date', _expirationDate,
+              _buildDateRow(S.of(context).expirationDate, _expirationDate,
                   () => _presentDatePicker('expiration')),
-              _buildTextField(_notesController, 'Notes'),
+              _buildTextField(_notesController, S.of(context).notes),
               const SizedBox(height: 20),
               ElevatedButton(
                 onPressed: _saveMedication,
@@ -223,9 +226,9 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
                   backgroundColor: const Color.fromARGB(255, 46, 161, 132),
                   elevation: 5,
                 ),
-                child: const Text(
-                  'Save Medication',
-                  style: TextStyle(
+                child: Text(
+                  S.of(context).saveMedication,
+                  style: const TextStyle(
                       fontSize: 18,
                       color: Colors.white), // Ensure text is white here
                 ),
@@ -274,7 +277,7 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Text(
-          _time == null ? 'Time' : _time!.format(context),
+          _time == null ? S.of(context).time : _time!.format(context),
           style: const TextStyle(fontSize: 16),
         ),
         IconButton(
@@ -290,34 +293,34 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
       mainAxisAlignment: MainAxisAlignment.spaceAround,
       children: [
         ElevatedButton(
-          onPressed: () => _selectSchedule('Daily'),
+          onPressed: () => _selectSchedule(S.of(context).daily),
           style: ElevatedButton.styleFrom(
-            backgroundColor: _selectedSchedule == 'Daily'
-                ? const Color.fromARGB(255, 46, 161, 132) // Selected color
+            backgroundColor: _selectedSchedule == S.of(context).daily
+                ? const Color.fromARGB(255, 46, 161, 132)
                 : Colors.grey,
           ),
-          child: const Text('Daily',
-              style: TextStyle(color: Colors.white)), // White text
+          child: Text(S.of(context).daily,
+              style: const TextStyle(color: Colors.white)),
         ),
         ElevatedButton(
-          onPressed: () => _selectSchedule('Weekly'),
+          onPressed: () => _selectSchedule(S.of(context).weekly),
           style: ElevatedButton.styleFrom(
-            backgroundColor: _selectedSchedule == 'Weekly'
-                ? const Color.fromARGB(255, 46, 161, 132) // Selected color
+            backgroundColor: _selectedSchedule == S.of(context).weekly
+                ? const Color.fromARGB(255, 46, 161, 132)
                 : Colors.grey,
           ),
-          child: const Text('Weekly',
-              style: TextStyle(color: Colors.white)), // White text
+          child: Text(S.of(context).weekly,
+              style: const TextStyle(color: Colors.white)),
         ),
         ElevatedButton(
-          onPressed: () => _selectSchedule('Monthly'),
+          onPressed: () => _selectSchedule(S.of(context).monthly),
           style: ElevatedButton.styleFrom(
-            backgroundColor: _selectedSchedule == 'Monthly'
-                ? const Color.fromARGB(255, 46, 161, 132) // Selected color
+            backgroundColor: _selectedSchedule == S.of(context).monthly
+                ? const Color.fromARGB(255, 46, 161, 132)
                 : Colors.grey,
           ),
-          child: const Text('Monthly',
-              style: TextStyle(color: Colors.white)), // White text
+          child: Text(S.of(context).monthly,
+              style: const TextStyle(color: Colors.white)),
         ),
       ],
     );
@@ -328,7 +331,7 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Text(
-          'Pills Count: $_pillsCount',
+          '${S.of(context).pillsCount}: $_pillsCount',
           style: const TextStyle(fontSize: 16),
         ),
         Row(

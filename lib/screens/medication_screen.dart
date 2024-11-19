@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:tadawa_app/models/medication.dart';
@@ -7,6 +6,7 @@ import 'package:intl/intl.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:tadawa_app/theme_providor.dart';
+import 'package:tadawa_app/generated/l10n.dart';
 
 import '../theme.dart';
 
@@ -102,8 +102,8 @@ class _MedicationScreenState extends State<MedicationScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-          backgroundColor: const Color.fromRGBO(255, 254, 247, 255),
-        title: const Text('Medications'),
+        backgroundColor: const Color.fromRGBO(255, 254, 247, 255),
+        title: Text(S.of(context).medications),
         actions: [
           IconButton(
             onPressed: () async {
@@ -126,7 +126,9 @@ class _MedicationScreenState extends State<MedicationScreen> {
           }
 
           if (snapshot.hasError) {
-            return Center(child: Text('Error: ${snapshot.error}'));
+            return Center(
+                child: Text(
+                    '${S.of(context).errorFetchingMedications}: ${snapshot.error}'));
           }
 
           final medications = snapshot.data ?? [];
@@ -157,22 +159,29 @@ class _MedicationScreenState extends State<MedicationScreen> {
 
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: Text('${medication.name} deleted'),
+                      content: Text(
+                        S.of(context).medicationDeleted(medication.name),
+                      ),
                     ),
                   );
                 },
-                child: Consumer<ThemeProvidor>(builder: (context, value, child) {
+                child:
+                    Consumer<ThemeProvidor>(builder: (context, value, child) {
                   return Card(
-                    color: value.themeData==lightMode? Color.fromRGBO(247, 242, 250, 1):Colors.blueGrey.shade800,
+                    color: value.themeData == lightMode
+                        ? const Color.fromRGBO(247, 242, 250, 1)
+                        : Colors.blueGrey.shade800,
                     elevation: 2,
                     margin: const EdgeInsets.symmetric(vertical: 8.0),
                     child: ListTile(
                       contentPadding: const EdgeInsets.all(16.0),
                       title: Text(
                         medication.name,
-                        style:  TextStyle(
+                        style: TextStyle(
                           fontSize: 18,
-                          color: value.themeData==lightMode?Colors.black:Colors.white,
+                          color: value.themeData == lightMode
+                              ? Colors.black
+                              : Colors.white,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
@@ -180,51 +189,62 @@ class _MedicationScreenState extends State<MedicationScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Start Date: ${DateFormat.yMMMd().format(medication.startDate)}',
-                            style:  TextStyle(fontSize: 14,   color: value.themeData==lightMode?Colors.black:Colors.white,),
+                            '${S.of(context).startDate}: ${DateFormat.yMMMd().format(medication.startDate)}',
+                            style: TextStyle(
+                                fontSize: 14,
+                                color: value.themeData == lightMode
+                                    ? Colors.black
+                                    : Colors.white),
                           ),
                           Text(
-                            'End Date: ${DateFormat.yMMMd().format(medication.endDate)}',
-                            style:  TextStyle(fontSize: 14,   color: value.themeData==lightMode?Colors.black:Colors.white,),
+                            '${S.of(context).endDate}: ${DateFormat.yMMMd().format(medication.endDate)}',
+                            style: TextStyle(
+                                fontSize: 14,
+                                color: value.themeData == lightMode
+                                    ? Colors.black
+                                    : Colors.white),
                           ),
                           Text(
-                            'Time: ${medication.time.format(context)}',
-                            style:  TextStyle(fontSize: 14,    color: value.themeData==lightMode?Colors.black:Colors.white),
+                            '${S.of(context).time}: ${medication.time.format(context)}',
+                            style: TextStyle(
+                                fontSize: 14,
+                                color: value.themeData == lightMode
+                                    ? Colors.black
+                                    : Colors.white),
                           ),
-                          // Warning message for pill count less than 5
                           if (medication.pillsCount < 5)
-                            const Padding(
-                              padding: EdgeInsets.only(top: 8.0),
+                            Padding(
+                              padding: const EdgeInsets.only(top: 8.0),
                               child: Text(
-                                'Warning: Pills are running low!',
-                                style: TextStyle(
+                                S.of(context).warningPillsLow,
+                                style: const TextStyle(
                                   color: Colors.red,
                                   fontSize: 14,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
                             ),
-                           // Warning message for expiry ******
-                           if (medication.expirationDate.isBefore(DateTime.now().add(const Duration(days: 7))) && !medication.isExpired())
-                                const Padding(
-                                 padding: EdgeInsets.only(top: 8.0),
-                                    child: Text(
-                                    'Warning: This medication will expire soon!',
-                                     style: TextStyle(
-                                     color: Color.fromARGB(186, 255, 72, 0),
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.bold,
-                                  ),
-                               ),
-                             ),
-                           ],
-                          ),
-
+                          if (medication.expirationDate.isBefore(DateTime.now()
+                                  .add(const Duration(days: 7))) &&
+                              !medication.isExpired())
+                            Padding(
+                              padding: const EdgeInsets.only(top: 8.0),
+                              child: Text(
+                                S.of(context).warningExpirationSoon,
+                                style: const TextStyle(
+                                  color: Color.fromARGB(186, 255, 72, 0),
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
                       trailing: IconButton(
-                        icon: const Icon(Icons.edit,color: Colors.grey,),
+                        icon: const Icon(Icons.edit, color: Colors.grey),
                         onPressed: () async {
                           final updatedMedication =
-                          await Navigator.push<Medication>(
+                              await Navigator.push<Medication>(
                             context,
                             MaterialPageRoute(
                               builder: (context) =>
@@ -236,7 +256,7 @@ class _MedicationScreenState extends State<MedicationScreen> {
                       onTap: () {},
                     ),
                   );
-                },)
+                }),
               );
             },
           );
