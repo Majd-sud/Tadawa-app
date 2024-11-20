@@ -42,7 +42,6 @@ Future<void> _requestNotificationPermission() async {
   } else if (status.isPermanentlyDenied) {
     print(
         'Notification permission permanently denied. Please enable it in the app settings.');
-    openAppSettings();
   }
 }
 

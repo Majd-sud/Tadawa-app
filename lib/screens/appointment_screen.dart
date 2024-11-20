@@ -187,8 +187,82 @@ class _AppointmentScreenState extends State<AppointmentScreen> {
           .doc(appointment.id)
           .set(appointmentData, SetOptions(merge: true));
 
+      // Schedule the notification
+      await _scheduleNotification(appointment);
+      // Update local state
+      final index = _appointments[appointment.date]
+          ?.indexWhere((a) => a.id == appointment.id);
+      if (index != null && index >= 0) {
+        _appointments[appointment.date]![index] = appointment;
+      } else {
+        _appointments[appointment.date]?.add(appointment);
+      }
+
       // Update the selected appointments
       _updateSelectedAppointments();
+    }
+  }
+
+  Future<void> _scheduleNotification(Appointment appointment) async {
+    int notificationId = appointment.id.hashCode;
+    // Schedule time for the appointment notification
+    final scheduledNotificationDateTime = DateTime(
+      appointment.date.year,
+      appointment.date.month,
+      appointment.date.day,
+      appointment.time.hour,
+      appointment.time.minute,
+    );
+    // Ensure the scheduled date is in the future
+    if (scheduledNotificationDateTime.isBefore(DateTime.now())) {
+      print(
+          'Scheduled time is in the past. Skipping scheduling for: $scheduledNotificationDateTime');
+      return;
+    }
+    // Schedule the main appointment notification
+    await _scheduleSingleNotification(
+      notificationId,
+      "${appointment.title} appointment",
+      scheduledNotificationDateTime,
+      'It is time for your appointment "${appointment.title}" at ${appointment.time.format(context)}',
+    );
+    // Schedule the reminder notification one hour before
+    final reminderNotificationDateTime =
+        scheduledNotificationDateTime.subtract(const Duration(hours: 1));
+    if (!reminderNotificationDateTime.isBefore(DateTime.now())) {
+      await _scheduleSingleNotification(
+        notificationId + 1,
+        'Appointment Reminder',
+        reminderNotificationDateTime,
+        'Do not forget! your appointment "${appointment.title}" is in 1 hour!',
+      );
+    }
+  }
+
+  Future<void> _scheduleSingleNotification(int notificationId, String title,
+      DateTime scheduledTime, String body) async {
+    try {
+      await FlutterLocalNotificationsPlugin().zonedSchedule(
+        notificationId,
+        title,
+        body,
+        tz.TZDateTime.from(scheduledTime, tz.local),
+        const NotificationDetails(
+          android: AndroidNotificationDetails(
+            'appointment_channel',
+            'Appointment Reminders',
+            channelDescription: 'Channel for appointment reminders',
+            importance: Importance.max,
+            priority: Priority.high,
+          ),
+        ),
+        androidScheduleMode: AndroidScheduleMode.exact,
+        uiLocalNotificationDateInterpretation:
+            UILocalNotificationDateInterpretation.absoluteTime,
+      );
+      print('Scheduled notification for: $title at $scheduledTime');
+    } catch (e) {
+      print('Error scheduling notification: $e');
     }
   }
 

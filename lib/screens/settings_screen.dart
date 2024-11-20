@@ -90,8 +90,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       elevation: 3,
                       margin: const EdgeInsets.only(bottom: 16),
                       child: ListTile(
+                        contentPadding: const EdgeInsets.all(16),
                         leading: CircleAvatar(
-                          radius: 20,
+                          radius: 28,
                           backgroundImage: _imageUrl.isNotEmpty
                               ? NetworkImage(_imageUrl)
                               : const AssetImage(
