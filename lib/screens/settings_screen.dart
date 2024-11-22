@@ -61,6 +61,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     setState(() {
       _currentLocale = locale;
     });
+    // Notify the localization package of the locale change
     S.load(locale);
   }
 
@@ -188,14 +189,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 title: const Text('English'),
                 onTap: () {
                   _changeLanguage(const Locale('en'));
-                  Navigator.of(context).pop();
+                  Navigator.of(context).pop(); // Close the dialog
                 },
               ),
               ListTile(
                 title: const Text('العربية'),
                 onTap: () {
                   _changeLanguage(const Locale('ar'));
-                  Navigator.of(context).pop();
+                  Navigator.of(context).pop(); // Close the dialog
                 },
               ),
             ],

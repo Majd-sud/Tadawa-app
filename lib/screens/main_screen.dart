@@ -11,6 +11,7 @@ import 'package:tadawa_app/theme_providor.dart';
 import 'package:timezone/data/latest.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
 import 'package:flutter_timezone/flutter_timezone.dart';
+import 'package:tadawa_app/generated/l10n.dart';
 
 final GlobalKey<ScaffoldMessengerState> _scaffoldMessengerKey =
     GlobalKey<ScaffoldMessengerState>();
@@ -307,7 +308,7 @@ class _MainScreenState extends State<MainScreen> {
         child: Scaffold(
           appBar: AppBar(
             backgroundColor: const Color.fromRGBO(255, 254, 247, 255),
-            title: const Text('Medications Overview'),
+            title: Text(S.of(context).noName),
           ),
           body: Column(
             children: [
@@ -323,20 +324,17 @@ class _MainScreenState extends State<MainScreen> {
     final todaysMedications = _getTodaysMedications(_selectedDate);
 
     if (todaysMedications.isEmpty) {
-      return Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Image.asset(
-            'assets/images/main_screen.png',
-            height: 300,
-          ),
-          const SizedBox(height: 20),
-          const Text(
-            'No medications for this day',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-          ),
-        ],
-      );
+      return Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+        Image.asset(
+          'assets/images/main_screen.png',
+          height: 300,
+        ),
+        const SizedBox(height: 20),
+        Text(
+          S.of(context).noName, // Use localized text
+          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        ),
+      ]);
     }
 
     return ListView.builder(

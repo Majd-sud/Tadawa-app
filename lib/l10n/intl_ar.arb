@@ -40,11 +40,8 @@
     "addMedication": "إضافة دواء",
     "editMedication": "تعديل الدواء",
     "medicationName": "اسم الدواء",
-    "startDate": "تاريخ البدء",
-    "endDate": "تاريخ الانتهاء",
     "expirationDate": "تاريخ الانتهاء",
     "notes": "ملاحظات",
-    "time": "الوقت",
     "daily": "يومي",
     "weekly": "أسبوعي",
     "monthly": "شهري",
@@ -58,7 +55,6 @@
     "add": "إضافة",
     "update": "تحديث",
     "cancel": "إلغاء",
-    "time": "الوقت",
     "appointmentDeleted": "تم حذف {appointmentName}",
     "doctorVisit": "زيارة الطبيب",
     "meeting": "اجتماع",
@@ -66,12 +62,15 @@
     "painkiller": "مسكن",
     "antibiotic": "مضاد حيوي",
     "vitamins": "فيتامينات",
-    "noName": "بدون اسم"
-  
-  
-  
-  
-
+    "noName": " اسم",
+    "medicationsOverview": "نظرة عامة على الأدوية",
+        "noMedicationsForThisDay": "لا يوجد أدوية لهذا اليوم",
+        "@noMedicationsForThisDay": {
+          "description": "يظهر عند عدم وجود أدوية مجدولة لليوم المحدد"
+        }
+      
+      
 }
+
 
 
