@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:provider/provider.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:tadawa_app/models/appointment.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:tadawa_app/theme.dart';
+import 'package:tadawa_app/theme_providor.dart';
 import 'package:timezone/timezone.dart' as tz;
 import 'package:tadawa_app/generated/l10n.dart';
 
@@ -338,8 +341,15 @@ class _AppointmentScreenState extends State<AppointmentScreen> {
                 return ListView.builder(
                   itemCount: value.length,
                   itemBuilder: (context, index) {
-                    return Card(
-                      color: const Color.fromRGBO(247, 242, 250, 1),
+                    
+                    
+                  return Consumer<ThemeProvidor>(builder:
+(context, provider, child) {
+  return    Card(
+                       color: provider.themeData == lightMode
+                          ? const Color.fromRGBO(247, 242, 250, 1)
+                          : Colors.blueGrey.shade800,
+              
                       margin: const EdgeInsets.symmetric(
                           vertical: 8, horizontal: 16),
                       elevation: 4,
@@ -366,6 +376,15 @@ class _AppointmentScreenState extends State<AppointmentScreen> {
                         ),
                       ),
                     );
+                 
+                 
+},
+
+
+                  
+                   );
+                 
+                 
                   },
                 );
               },

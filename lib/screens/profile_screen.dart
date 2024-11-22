@@ -4,7 +4,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:tadawa_app/widgets/profile_image.dart';
-import 'package:tadawa_app/generated/l10n.dart';
 
 final _firebase = FirebaseAuth.instance;
 final _firestore = FirebaseFirestore.instance;
@@ -67,7 +66,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     } catch (e) {
       print("Error fetching user data: $e");
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(S.of(context).errorFetchingUserData)),
+        const SnackBar(content: Text('Error fetching user data')),
       );
     } finally {
       setState(() {
@@ -103,11 +102,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
         });
 
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(S.of(context).profileUpdated)),
+          const SnackBar(content: Text('Profile updated successfully!')),
         );
       } catch (e) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(S.of(context).errorUpdatingProfile)),
+          const SnackBar(content: Text('Error updating profile')),
         );
       } finally {
         setState(() {
@@ -133,7 +132,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           child: Scaffold(
             appBar: AppBar(
               backgroundColor: const Color.fromRGBO(255, 254, 247, 255),
-              title: Text(S.of(context).profile),
+              title: const Text('Profile'),
             ),
             body: _isLoading
                 ? const Center(child: CircularProgressIndicator())
@@ -151,16 +150,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           const SizedBox(height: 20),
                           TextFormField(
                             initialValue: _username,
-                            decoration: InputDecoration(
-                              labelText: S.of(context).username,
-                              border: const OutlineInputBorder(),
+                            decoration: const InputDecoration(
+                              labelText: 'Username',
+                              border: OutlineInputBorder(),
                             ),
                             onChanged: (value) {
                               _username = value;
                             },
                             validator: (value) {
                               if (value == null || value.isEmpty) {
-                                return S.of(context).pleaseEnterUsername;
+                                return 'Please enter your username.';
                               }
                               return null;
                             },
@@ -168,16 +167,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           const SizedBox(height: 10),
                           TextFormField(
                             initialValue: _firstName,
-                            decoration: InputDecoration(
-                              labelText: S.of(context).firstName,
-                              border: const OutlineInputBorder(),
+                            decoration: const InputDecoration(
+                              labelText: 'First Name',
+                              border: OutlineInputBorder(),
                             ),
                             onChanged: (value) {
                               _firstName = value;
                             },
                             validator: (value) {
                               if (value == null || value.isEmpty) {
-                                return S.of(context).pleaseEnterFirstName;
+                                return 'Please enter your first name.';
                               }
                               return null;
                             },
@@ -185,16 +184,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           const SizedBox(height: 10),
                           TextFormField(
                             initialValue: _lastName,
-                            decoration: InputDecoration(
-                              labelText: S.of(context).lastName,
-                              border: const OutlineInputBorder(),
+                            decoration: const InputDecoration(
+                              labelText: 'Last Name',
+                              border: OutlineInputBorder(),
                             ),
                             onChanged: (value) {
                               _lastName = value;
                             },
                             validator: (value) {
                               if (value == null || value.isEmpty) {
-                                return S.of(context).pleaseEnterLastName;
+                                return 'Please enter your last name.';
                               }
                               return null;
                             },
@@ -202,9 +201,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           const SizedBox(height: 10),
                           TextFormField(
                             initialValue: _phone,
-                            decoration: InputDecoration(
-                              labelText: S.of(context).phone,
-                              border: const OutlineInputBorder(),
+                            decoration: const InputDecoration(
+                              labelText: 'Phone',
+                              border: OutlineInputBorder(),
                             ),
                             keyboardType: TextInputType.phone,
                             onChanged: (value) {
@@ -212,7 +211,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             },
                             validator: (value) {
                               if (value == null || value.isEmpty) {
-                                return S.of(context).pleaseEnterPhoneNumber;
+                                return 'Please enter your phone number.';
                               }
                               return null;
                             },
@@ -220,9 +219,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           const SizedBox(height: 10),
                           TextFormField(
                             initialValue: _email,
-                            decoration: InputDecoration(
-                              labelText: S.of(context).email,
-                              border: const OutlineInputBorder(),
+                            decoration: const InputDecoration(
+                              labelText: 'Email',
+                              border: OutlineInputBorder(),
                             ),
                             keyboardType: TextInputType.emailAddress,
                             onChanged: (value) {
@@ -232,7 +231,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               if (value == null ||
                                   value.isEmpty ||
                                   !value.contains('@')) {
-                                return S.of(context).pleaseEnterValidEmail;
+                                return 'Please enter a valid email address.';
                               }
                               return null;
                             },
@@ -249,14 +248,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(30),
                               ),
-                              backgroundColor: const Color.fromARGB(
-                                  255, 46, 161, 132), // Background color
+                              backgroundColor: const Color.fromARGB(255, 46, 161, 132), // Background color
                               textStyle: const TextStyle(fontSize: 18),
                             ),
-                            child: Text(
-                              S.of(context).updateProfile,
-                              style: const TextStyle(
-                                  color: Colors.white), // Text color
+                            child: const Text(
+                              'Update Profile',
+                              style: TextStyle(color: Colors.white), // Text color
                             ),
                           ),
                         ],
