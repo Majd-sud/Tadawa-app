@@ -29,6 +29,7 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
   TimeOfDay? _time;
   int _pillsCount = 1;
   String? _selectedSchedule;
+  String? _imagePath;
 
   @override
   void initState() {
@@ -44,7 +45,14 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
       _pillsCount = widget.medication!.pillsCount;
       _pillsController.text = _pillsCount.toString();
       _selectedSchedule = widget.medication!.frequency;
+      _imagePath = widget.medication!.photoUrl;
     }
+  }
+
+   void _onImageSelected(String imagePath) {
+    setState(() {
+      _imagePath = imagePath; // Store the selected image path
+    });
   }
 
   void _presentDatePicker(String dateType) async {
@@ -114,6 +122,7 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
     }
 
     final medication = Medication(
+      id: widget.medication?.id,
       name: _nameController.text,
       startDate: _startDate!,
       endDate: _endDate!,
@@ -123,6 +132,7 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
       pillsCount: _pillsCount,
       time: _time!,
       frequency: _selectedSchedule ?? S.of(context).daily,
+      photoUrl: _imagePath ?? '',
     );
 
     final user = FirebaseAuth.instance.currentUser;
@@ -142,6 +152,7 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
           'pillsCount': medication.pillsCount,
           'time': medication.time.format(context),
           'frequency': medication.frequency,
+          'photoUrl': medication.photoUrl,
         });
       } else {
         // Updating existing medication
@@ -159,6 +170,7 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
           'pillsCount': medication.pillsCount,
           'time': medication.time.format(context),
           'frequency': medication.frequency,
+          'photoUrl': medication.photoUrl,
         });
       }
     }
@@ -197,11 +209,9 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
           child: Column(
             children: [
               _buildTextField(_nameController, S.of(context).medicationName),
-              MedicationImage(
-                onImageSelected: (imagePath) {
-                  setState(() {});
-                },
-                initialImagePath: null,
+               MedicationImage(
+                onImageSelected: _onImageSelected,
+                initialImagePath: _imagePath, 
               ),
               _buildDateRow(S.of(context).startDate, _startDate,
                   () => _presentDatePicker('start')),

@@ -344,7 +344,7 @@ class _AppointmentScreenState extends State<AppointmentScreen> {
                           vertical: 8, horizontal: 16),
                       elevation: 4,
                       child: ListTile(
-                        leading: const Icon(Icons.event, color: Colors.black),
+                        leading: const Icon(Icons.event, color: Color.fromARGB(255, 46, 161, 132) ),
                         title: Text(
                           value[index].title,
                           style: const TextStyle(

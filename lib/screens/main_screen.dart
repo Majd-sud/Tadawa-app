@@ -10,7 +10,10 @@ import 'package:tadawa_app/theme.dart';
 import 'package:tadawa_app/theme_providor.dart';
 import 'package:timezone/data/latest.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
-import 'package:flutter_timezone/flutter_timezone.dart'; // Import this package
+import 'package:flutter_timezone/flutter_timezone.dart';
+
+final GlobalKey<ScaffoldMessengerState> _scaffoldMessengerKey =
+    GlobalKey<ScaffoldMessengerState>();
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -22,17 +25,14 @@ class MainScreen extends StatefulWidget {
 class _MainScreenState extends State<MainScreen> {
   List<Medication> _medications = [];
   DateTime _selectedDate = DateTime.now();
+  final List<SnackBar> _snackBarsQueue = []; // Queue for SnackBars
 
   @override
   void initState() {
     super.initState();
     tz.initializeTimeZones();
-
-    // Set the local time zone
     _setLocalTimeZone();
-
-    NotificationService
-        .initialize(); // Ensure notification service is initialized
+    NotificationService.initialize();
     _fetchMedications();
   }
 
@@ -61,6 +61,9 @@ class _MainScreenState extends State<MainScreen> {
         print(
             'Fetched medications: ${_medications.map((m) => m.name).toList()}');
 
+        // Check for warnings after fetching medications
+        _checkForWarnings();
+
         // Schedule notifications for each medication
         await _scheduleNotifications();
       } catch (e) {
@@ -71,7 +74,62 @@ class _MainScreenState extends State<MainScreen> {
     }
   }
 
-  // Method to check if any medication has less than 5 pills
+  void _checkForWarnings() {
+    bool hasExpiringMedications = _medications.any((medication) =>
+        medication.expirationDate
+            .isBefore(DateTime.now().add(Duration(days: 7))) &&
+        !medication.isExpired());
+
+    bool hasLowPills = _hasLowPills();
+
+    if (hasExpiringMedications) {
+      _addSnackBar('You have medications expiring within the next week!',
+          Colors.orange, Icons.warning);
+    }
+
+    if (hasLowPills) {
+      _addSnackBar('You have medications with less than 5 pills left!',
+          Colors.red, Icons.warning);
+    }
+  }
+
+  void _addSnackBar(String message, Color backgroundColor, IconData icon) {
+    final snackBar = SnackBar(
+      content: Row(
+        children: [
+          Icon(icon, color: Colors.white),
+          const SizedBox(width: 10),
+          Expanded(
+              child:
+                  Text(message, style: const TextStyle(color: Colors.white))),
+          IconButton(
+            icon: const Icon(Icons.close, color: Colors.white),
+            onPressed: () {
+              _scaffoldMessengerKey.currentState?.hideCurrentSnackBar();
+            },
+          ),
+        ],
+      ),
+      backgroundColor: backgroundColor,
+      duration: const Duration(seconds: 1),
+      behavior: SnackBarBehavior.floating,
+    );
+
+    // Add to the queue and show
+    _snackBarsQueue.add(snackBar);
+    _showNextSnackBar();
+  }
+
+  void _showNextSnackBar() {
+    if (_snackBarsQueue.isNotEmpty) {
+      final snackBar = _snackBarsQueue.removeAt(0);
+      ScaffoldMessenger.of(context).showSnackBar(snackBar).closed.then((_) {
+        // Show the next SnackBar when the current one is closed
+        _showNextSnackBar();
+      });
+    }
+  }
+
   bool _hasLowPills() {
     return _medications.any((medication) => medication.pillsCount < 5);
   }
@@ -110,7 +168,6 @@ class _MainScreenState extends State<MainScreen> {
         await _scheduleNotification(medication, localDateTime);
       }
 
-      // Schedule an expiry alert if the medication is not expired
       if (!medication.isExpired()) {
         await _scheduleExpiryNotification(medication);
       }
@@ -238,66 +295,48 @@ class _MainScreenState extends State<MainScreen> {
   }
 
   @override
+  void dispose() {
+    _scaffoldMessengerKey.currentState?.hideCurrentSnackBar();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: const Color.fromRGBO(255, 254, 247, 255),
-        title: const Text('Medications Overview'),
-      ),
-      body: Column(
-        children: [
-          _buildDateSelector(),
-          const SizedBox(height: 20),
-          Expanded(
-            child: _buildMedicationList(),
+    return ScaffoldMessenger(
+        key: _scaffoldMessengerKey,
+        child: Scaffold(
+          appBar: AppBar(
+            backgroundColor: const Color.fromRGBO(255, 254, 247, 255),
+            title: const Text('Medications Overview'),
           ),
-
-          // Check if any of the medications in the _medications list have an expiration date
-          // that is before the current date plus 7 days
-          if (_medications.any((medication) =>
-              medication.expirationDate
-                  .isBefore(DateTime.now().add(Duration(days: 7))) &&
-              !medication.isExpired()))
-            Padding(
-              padding: const EdgeInsets.only(top: 8.0),
-              child: Container(
-                color: Colors.orange[200],
-                padding:
-                    const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
-                child: Text(
-                  'Warning: You have medications expiring within the next week!',
-                  style: const TextStyle(
-                      fontSize: 16, fontWeight: FontWeight.bold),
-                ),
-              ),
-            ),
-
-          // Display warning if any medication has less than 5 pills left
-          if (_hasLowPills())
-            Padding(
-              padding: const EdgeInsets.only(top: 8.0),
-              child: Container(
-                  color: Colors.yellow[200],
-                  padding:
-                      const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
-                  child: const Text(
-                      'Warning: You have medications with less than 5 pills left!',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black,
-                      ))),
-            ),
-        ],
-      ),
-    );
+          body: Column(
+            children: [
+              _buildDateSelector(),
+              const SizedBox(height: 20),
+              Expanded(child: _buildMedicationList()),
+            ],
+          ),
+        ));
   }
 
   Widget _buildMedicationList() {
     final todaysMedications = _getTodaysMedications(_selectedDate);
 
     if (todaysMedications.isEmpty) {
-      return const Center(child: Text('No medications for this date.'));
+      return Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Image.asset(
+            'assets/images/main_screen.png',
+            height: 300,
+          ),
+          const SizedBox(height: 20),
+          const Text(
+            'No medications for this day',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+        ],
+      );
     }
 
     return ListView.builder(
@@ -316,9 +355,14 @@ class _MainScreenState extends State<MainScreen> {
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: ListTile(
+                  leading: Image.asset(
+                    'assets/images/pill.png',
+                    height: 30,
+                  ),
                   title: Text(
                     medication.name,
                     style: TextStyle(
+                        fontWeight: FontWeight.bold,
                         color: value.themeData == lightMode
                             ? Colors.black
                             : Colors.white),
@@ -334,9 +378,6 @@ class _MainScreenState extends State<MainScreen> {
                     activeColor: value.themeData == lightMode
                         ? Colors.black
                         : Colors.white,
-                    // focusColor: value.themeData==lightMode?Colors.black:Colors.white,
-                    // hoverColor: value.themeData==lightMode?Colors.black:Colors.white,
-                    // checkColor:  value.themeData==lightMode?Colors.black:Colors.white,
                     side: BorderSide(
                         color: value.themeData == lightMode
                             ? Colors.black

@@ -20,29 +20,70 @@ class MedicationImage extends StatefulWidget {
 
 class _MedicationImageState extends State<MedicationImage> {
   File? _selectedImage;
+  bool _isLoading = false;
 
   @override
   void initState() {
     super.initState();
     if (widget.initialImagePath != null) {
-      _selectedImage = File(widget.initialImagePath!); 
+      _selectedImage = File(widget.initialImagePath!);
     }
   }
 
-  void _takePicture() async {
+  Future<void> _pickImage(ImageSource source) async {
     final imagePicker = ImagePicker();
-    final pickedImage =
-        await imagePicker.pickImage(source: ImageSource.camera, maxWidth: 600);
-
-    if (pickedImage == null) {
-      return;
-    }
-
     setState(() {
-      _selectedImage = File(pickedImage.path);
+      _isLoading = true; // Show loading indicator
     });
 
-    widget.onImageSelected(pickedImage.path);
+    try {
+      final pickedImage = await imagePicker.pickImage(source: source, maxWidth: 600);
+
+      if (pickedImage != null) {
+        setState(() {
+          _selectedImage = File(pickedImage.path);
+        });
+
+        widget.onImageSelected(pickedImage.path);
+      }
+    } catch (e) {
+      // Handle any errors
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error picking image: $e')),
+      );
+    } finally {
+      setState(() {
+        _isLoading = false; // Hide loading indicator
+      });
+    }
+  }
+
+  void _showImageSourceSelection() {
+    showModalBottomSheet(
+      context: context,
+      builder: (ctx) {
+        return Wrap(
+          children: [
+            ListTile(
+              leading: const Icon(Icons.camera),
+              title: const Text('Camera'),
+              onTap: () {
+                Navigator.of(ctx).pop();
+                _pickImage(ImageSource.camera);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.photo),
+              title: const Text('Gallery'),
+              onTap: () {
+                Navigator.of(ctx).pop();
+                _pickImage(ImageSource.gallery);
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
@@ -50,12 +91,12 @@ class _MedicationImageState extends State<MedicationImage> {
     Widget content = TextButton.icon(
       icon: const Icon(Icons.camera_alt_outlined),
       label: const Text('Take Picture'),
-      onPressed: _takePicture,
+      onPressed: _showImageSourceSelection,
     );
 
     if (_selectedImage != null) {
       content = GestureDetector(
-        onTap: _takePicture,
+        onTap: _showImageSourceSelection,
         child: Image.file(
           _selectedImage!,
           fit: BoxFit.cover,
@@ -75,7 +116,9 @@ class _MedicationImageState extends State<MedicationImage> {
       height: 200,
       width: double.infinity,
       alignment: Alignment.center,
-      child: content,
+      child: _isLoading
+          ? const CircularProgressIndicator() // Show loading indicator
+          : content,
     );
   }
 }

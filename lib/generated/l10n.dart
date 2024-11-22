@@ -393,7 +393,7 @@ class S {
   /// `Warning: Pills are running low!`
   String get warningPillsLow {
     return Intl.message(
-      'Warning: Pills are running low!',
+      'Pills are running low!',
       name: 'warningPillsLow',
       desc: '',
       args: [],
@@ -403,7 +403,7 @@ class S {
   /// `Warning: This medication will expire soon!`
   String get warningExpirationSoon {
     return Intl.message(
-      'Warning: This medication will expire soon!',
+      'This medication will expire soon!',
       name: 'warningExpirationSoon',
       desc: '',
       args: [],

@@ -109,9 +109,9 @@ class MessageLookup extends MessageLookupByLibrary {
         "username": MessageLookupByLibrary.simpleMessage("Username"),
         "vitamins": MessageLookupByLibrary.simpleMessage("Vitamins"),
         "warningExpirationSoon": MessageLookupByLibrary.simpleMessage(
-            "Warning: This medication will expire soon!"),
+            "This medication will expire soon!"),
         "warningPillsLow": MessageLookupByLibrary.simpleMessage(
-            "Warning: Pills are running low!"),
+            "Pills are running low!"),
         "weekly": MessageLookupByLibrary.simpleMessage("Weekly")
       };
 }

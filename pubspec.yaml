@@ -75,6 +75,9 @@ flutter:
   - assets/logos/logo1.PNG
   - assets/logos/logo2.PNG
   - assets/images/default_profile.jpg
+  - assets/images/main_screen.png
+  - assets/images/no_medication.png
+  - assets/images/pill.png
 
 
   # An image asset can refer to one or more resolution-specific "variants", see

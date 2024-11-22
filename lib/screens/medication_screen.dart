@@ -7,7 +7,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:tadawa_app/theme_providor.dart';
 import 'package:tadawa_app/generated/l10n.dart';
-
 import '../theme.dart';
 
 class MedicationScreen extends StatefulWidget {
@@ -38,7 +37,7 @@ class _MedicationScreenState extends State<MedicationScreen> {
         return snapshot.docs.map((doc) {
           final data = doc.data();
           return Medication(
-            id: doc.id, // Get the document ID
+            id: doc.id,
             name: data['name'] ?? '',
             startDate: _parseDate(data['startDate']),
             endDate: _parseDate(data['endDate']),
@@ -50,6 +49,7 @@ class _MedicationScreenState extends State<MedicationScreen> {
                 : const TimeOfDay(hour: 12, minute: 0),
             frequency: data['frequency'] ?? '',
             schedule: data['schedule'] ?? '',
+            photoUrl: data['photoUrl'] ?? '', // Fetch the photo URL
           );
         }).toList();
       });
@@ -132,6 +132,26 @@ class _MedicationScreenState extends State<MedicationScreen> {
           }
 
           final medications = snapshot.data ?? [];
+
+          if (medications.isEmpty) {
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Image.asset(
+                    'assets/images/no_medication.png',
+                    height: 300,
+                  ),
+                  const SizedBox(height: 20),
+                  const Text(
+                    'No medications added',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                ],
+              ),
+            );
+          }
+
           return ListView.builder(
             padding: const EdgeInsets.all(16.0),
             itemCount: medications.length,
@@ -154,7 +174,7 @@ class _MedicationScreenState extends State<MedicationScreen> {
                       .collection('users')
                       .doc(FirebaseAuth.instance.currentUser!.uid)
                       .collection('medications')
-                      .doc(medication.id) // Use the document ID here
+                      .doc(medication.id)
                       .delete();
 
                   ScaffoldMessenger.of(context).showSnackBar(
@@ -215,13 +235,25 @@ class _MedicationScreenState extends State<MedicationScreen> {
                           if (medication.pillsCount < 5)
                             Padding(
                               padding: const EdgeInsets.only(top: 8.0),
-                              child: Text(
-                                S.of(context).warningPillsLow,
-                                style: const TextStyle(
-                                  color: Colors.red,
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.bold,
-                                ),
+                              child: Row(
+                                children: [
+                                  Icon(
+                                    Icons.warning,
+                                    color: Colors.red,
+                                    size: 20,
+                                  ),
+                                  const SizedBox(width: 4),
+                                  Expanded(
+                                    child: Text(
+                                      S.of(context).warningPillsLow,
+                                      style: const TextStyle(
+                                        color: Colors.red,
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
                           if (medication.expirationDate.isBefore(DateTime.now()
@@ -229,13 +261,25 @@ class _MedicationScreenState extends State<MedicationScreen> {
                               !medication.isExpired())
                             Padding(
                               padding: const EdgeInsets.only(top: 8.0),
-                              child: Text(
-                                S.of(context).warningExpirationSoon,
-                                style: const TextStyle(
-                                  color: Color.fromARGB(186, 255, 72, 0),
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.bold,
-                                ),
+                              child: Row(
+                                children: [
+                                  Icon(
+                                    Icons.warning,
+                                    color: Color.fromARGB(186, 255, 72, 0),
+                                    size: 20,
+                                  ),
+                                  const SizedBox(width: 4),
+                                  Expanded(
+                                    child: Text(
+                                      S.of(context).warningExpirationSoon,
+                                      style: const TextStyle(
+                                        color: Color.fromARGB(186, 255, 72, 0),
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
                         ],
