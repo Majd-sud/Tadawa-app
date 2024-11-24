@@ -15,6 +15,7 @@ class Medication {
     required this.schedule,
     required this.expirationDate,
     required this.pillsCount,
+    required this.medicationType,
     this.notes = '',
     this.photoUrl = '',
     required this.frequency,
@@ -35,7 +36,8 @@ class Medication {
   final TimeOfDay time;
   final String schedule;
   final DateTime expirationDate; //expiry
-   int pillsCount;
+  int pillsCount;
+  final String medicationType; 
   final String notes;
   final String photoUrl;
   final String frequency;
@@ -60,6 +62,7 @@ class Medication {
       expirationDate: parseDate(data['expirationDate']),
       notes: data['notes'] ?? '',
       pillsCount: data['pillsCount'] ?? 0,
+      medicationType: data['medicationType'] ?? 'pills', // Default type if not provided
       time: _parseTime(data['time']),
       frequency: data['frequency'] ?? '',
       schedule: data['schedule'] ?? '',

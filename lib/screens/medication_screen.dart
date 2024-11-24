@@ -43,13 +43,14 @@ class _MedicationScreenState extends State<MedicationScreen> {
             endDate: _parseDate(data['endDate']),
             expirationDate: _parseDate(data['expirationDate']),
             notes: data['notes'] ?? '',
-            pillsCount: data['pillsCount'] ?? 0,
+            pillsCount: data['pillsCount'] is int ? data['pillsCount'] : 0,  // Ensure it's an int
             time: data['time'] != null
                 ? _parseTime(data['time'])
                 : const TimeOfDay(hour: 12, minute: 0),
             frequency: data['frequency'] ?? '',
             schedule: data['schedule'] ?? '',
-            photoUrl: data['photoUrl'] ?? '', // Fetch the photo URL
+            photoUrl: data['photoUrl'] ?? '',
+            medicationType: data['type'] ?? '', // Assuming the field in Firestore is named 'type'
           );
         }).toList();
       });
@@ -233,7 +234,7 @@ class _MedicationScreenState extends State<MedicationScreen> {
                                     ? Colors.black
                                     : Colors.white),
                           ),
-                          if (medication.pillsCount < 5)
+                          if (medication.pillsCount < 5 && medication.medicationType == 'Pills')
                             Padding(
                               padding: const EdgeInsets.only(top: 8.0),
                               child: Row(

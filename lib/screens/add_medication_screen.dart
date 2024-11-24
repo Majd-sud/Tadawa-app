@@ -30,6 +30,9 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
   int _pillsCount = 1;
   String? _selectedSchedule;
   String? _imagePath;
+  String _medicationType = 'Pills';  // Default to 'Pills' or 'Syrup'
+  //String get medicationType => _medicationType;  // ممكن ماله داعي  
+
 
   @override
   void initState() {
@@ -46,8 +49,19 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
       _pillsController.text = _pillsCount.toString();
       _selectedSchedule = widget.medication!.frequency;
       _imagePath = widget.medication!.photoUrl;
+      _medicationType = _pillsCount > 0 ? 'Pills' : 'Syrup';
+      
     }
   }
+  void _selectMedicationType(String? type) {
+  if (type == null) return; // Handle null case
+  setState(() {
+    _medicationType = type;
+    if (type == 'Syrup') {
+      _pillsCount = 0; // Reset pill count if it's Syrup
+    }
+  });
+}
 
    void _onImageSelected(String imagePath) {
     setState(() {
@@ -129,7 +143,8 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
       schedule: _scheduleController.text,
       expirationDate: _expirationDate!,
       notes: _notesController.text,
-      pillsCount: _pillsCount,
+      pillsCount: _medicationType == 'Pills' ? _pillsCount : 0,
+      medicationType: _medicationType,
       time: _time!,
       frequency: _selectedSchedule ?? S.of(context).daily,
       photoUrl: _imagePath ?? '',
@@ -153,6 +168,8 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
           'time': medication.time.format(context),
           'frequency': medication.frequency,
           'photoUrl': medication.photoUrl,
+          'type': medication.medicationType, // Save the type of medication
+
         });
       } else {
         // Updating existing medication
@@ -171,6 +188,8 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
           'time': medication.time.format(context),
           'frequency': medication.frequency,
           'photoUrl': medication.photoUrl,
+         'type': medication.medicationType, // Save the type of medication
+
         });
       }
     }
@@ -221,7 +240,39 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
               const SizedBox(height: 20),
               _buildScheduleButtons(),
               const SizedBox(height: 20),
-              _buildPillCountPicker(),
+                // Medication type selection
+           Row(
+             mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+               SizedBox(
+               width: 100, 
+               child: Text(
+               "Type", // Localized string
+               style: const TextStyle(fontSize: 16), 
+               ),
+             ),
+            DropdownButton<String>(
+                value: _medicationType,
+                dropdownColor: Colors.white,
+                icon: const Icon(Icons.arrow_drop_down),
+                underline: Container(
+                height: 2,
+               color: Colors.grey,
+               ),
+              items: ['Pills', 'Syrup']
+               .map((type) => DropdownMenuItem(
+                value: type,
+                child: Text(type),
+              ))
+          .toList(),
+      onChanged: _selectMedicationType,
+    ),
+  ],
+),
+            const SizedBox(height: 20),
+            // Pill count picker (only if medication type is Pills)
+            if (_medicationType == 'Pills') _buildPillCountPicker(),
+            
               _buildDateRow(S.of(context).expirationDate, _expirationDate,
                   () => _presentDatePicker('expiration')),
               _buildTextField(_notesController, S.of(context).notes),

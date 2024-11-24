@@ -76,6 +76,7 @@ class _MainScreenState extends State<MainScreen> {
   }
 
   void _checkForWarnings() {
+    
     bool hasExpiringMedications = _medications.any((medication) =>
         medication.expirationDate
             .isBefore(DateTime.now().add(Duration(days: 7))) &&
@@ -88,10 +89,16 @@ class _MainScreenState extends State<MainScreen> {
           Colors.orange, Icons.warning);
     }
 
-    if (hasLowPills) {
-      _addSnackBar('You have medications with less than 5 pills left!',
-          Colors.red, Icons.warning);
-    }
+   if (hasLowPills) {
+     if (_medications.any((medication) =>
+      medication.medicationType == 'Pills' && medication.pillsCount < 5)) {
+      _addSnackBar(
+      'You have medications with less than 5 pills left!',
+      Colors.red,
+      Icons.warning,
+    );
+  }
+}
   }
 
   void _addSnackBar(String message, Color backgroundColor, IconData icon) {
@@ -132,7 +139,7 @@ class _MainScreenState extends State<MainScreen> {
   }
 
   bool _hasLowPills() {
-    return _medications.any((medication) => medication.pillsCount < 5);
+    return _medications.any((medication) => medication.pillsCount < 5 );
   }
 
   Future<void> _scheduleNotifications() async {
@@ -383,9 +390,14 @@ class _MainScreenState extends State<MainScreen> {
                     value: medication.takenStatus[_selectedDate] ?? false,
                     onChanged: (value) {
                       setState(() {
+                        
                         medication.takenStatus[_selectedDate] = value ?? false;
                         if (value == true && medication.pillsCount > 0) {
                           medication.pillsCount -= 1;
+                          _updatePillsCount(medication, medication.pillsCount);
+                        }
+                        if (value == false ) {
+                          medication.pillsCount += 1;
                           _updatePillsCount(medication, medication.pillsCount);
                         }
                       });
