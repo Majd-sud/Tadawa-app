@@ -66,7 +66,8 @@ class MessageLookup extends MessageLookupByLibrary {
         "medications": MessageLookupByLibrary.simpleMessage("الأدوية"),
         "meeting": MessageLookupByLibrary.simpleMessage("اجتماع"),
         "monthly": MessageLookupByLibrary.simpleMessage("شهري"),
-        "noName": MessageLookupByLibrary.simpleMessage("بدون اسم"),
+        "medicationOfTheDay":
+            MessageLookupByLibrary.simpleMessage(" جدول الأدوية"),
         "noTitle": MessageLookupByLibrary.simpleMessage("بدون عنوان"),
         "notes": MessageLookupByLibrary.simpleMessage("ملاحظات"),
         "notification": MessageLookupByLibrary.simpleMessage("الإشعارات"),
@@ -90,6 +91,7 @@ class MessageLookup extends MessageLookupByLibrary {
             "يرجى إدخال بريد إلكتروني صالح."),
         "pleaseFillAllFields":
             MessageLookupByLibrary.simpleMessage("يرجى ملء جميع الحقول."),
+        "pillsSchedule": MessageLookupByLibrary.simpleMessage("جدول الأدوية"),
         "preferences": MessageLookupByLibrary.simpleMessage("التفضيلات"),
         "profile": MessageLookupByLibrary.simpleMessage("الملف الشخصي"),
         "profileUpdated": MessageLookupByLibrary.simpleMessage(
@@ -105,6 +107,10 @@ class MessageLookup extends MessageLookupByLibrary {
         "vitamins": MessageLookupByLibrary.simpleMessage("فيتامينات"),
         "warningExpirationSoon": MessageLookupByLibrary.simpleMessage(
             "تحذير: ستنتهي صلاحية هذا الدواء قريبًا!"),
+        "noMedicationsAdded":
+            MessageLookupByLibrary.simpleMessage("لم يتم إضافة أي أدوية"),
+        "noPillsForToday":
+            MessageLookupByLibrary.simpleMessage("لايوجد أدويه لأخذها اليوم"),
         "warningPillsLow": MessageLookupByLibrary.simpleMessage(
             "تحذير: الأدوية على وشك النفاد!"),
         "weekly": MessageLookupByLibrary.simpleMessage("أسبوعي")

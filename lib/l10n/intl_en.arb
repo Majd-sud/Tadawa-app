@@ -63,8 +63,11 @@
   "antibiotic": "Antibiotic",
   "vitamins": "Vitamins",
   "noName": "med",
+  "noMedicationsAdded": "No medications added"
+,
   "medicationsOverview": "Medications Overview",
-  
+  "medicationOfTheDay": "Medications of the day"
+,"noPillsForToday": "No pills for today",
     "noMedicationsForThisDay": "No medications for this day",
     "@noMedicationsForThisDay": {
       "description": "Displayed when no medications are scheduled for the selected day"

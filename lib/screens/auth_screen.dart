@@ -40,6 +40,31 @@ class _AuthScreenState extends State<AuthScreen> {
 
     _form.currentState!.save();
 
+    if (!_isLogin) {
+      try {
+        final querySnapshot = await FirebaseFirestore.instance
+            .collection('users')
+            .where('username', isEqualTo: _enteredUsername.trim())
+            .get();
+
+        if (querySnapshot.docs.isNotEmpty) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Username already taken. Please choose another.'),
+            ),
+          );
+          return;
+        }
+      } catch (error) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to check username: $error'),
+          ),
+        );
+        return;
+      }
+    }
+
     try {
       setState(() {
         _isAuthenticating = true;
@@ -243,11 +268,13 @@ class _AuthScreenState extends State<AuthScreen> {
                   ElevatedButton(
                     onPressed: _submit,
                     style: ElevatedButton.styleFrom(
-                      minimumSize: const Size(double.infinity, 50), // Full width
+                      minimumSize:
+                          const Size(double.infinity, 50), // Full width
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(30),
                       ),
-                      backgroundColor: const Color.fromARGB(255, 46, 161, 132), // Background color
+                      backgroundColor: const Color.fromARGB(
+                          255, 46, 161, 132), // Background color
                       textStyle: const TextStyle(fontSize: 18),
                     ),
                     child: Text(

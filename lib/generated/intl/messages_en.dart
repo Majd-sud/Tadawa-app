@@ -68,6 +68,8 @@ class MessageLookup extends MessageLookupByLibrary {
         "medicationDeleted": m1,
         "medicationName":
             MessageLookupByLibrary.simpleMessage("Medication Name"),
+        "noPillsForToday":
+            MessageLookupByLibrary.simpleMessage("No pills for today"),
         "medications": MessageLookupByLibrary.simpleMessage("Medications"),
         "meeting": MessageLookupByLibrary.simpleMessage("Meeting"),
         "monthly": MessageLookupByLibrary.simpleMessage("Monthly"),
@@ -77,6 +79,9 @@ class MessageLookup extends MessageLookupByLibrary {
         "notification": MessageLookupByLibrary.simpleMessage("Notification"),
         "notificationInstructions": MessageLookupByLibrary.simpleMessage(
             "Please make sure to open:\nSettings > Apps > Tadawa App > Notifications > Allow"),
+        "pillsSchedule": MessageLookupByLibrary.simpleMessage("Pill Schedule"),
+        "noMedicationsAdded":
+            MessageLookupByLibrary.simpleMessage("no medications added"),
         "notificationSettings":
             MessageLookupByLibrary.simpleMessage("Notification Settings"),
         "ok": MessageLookupByLibrary.simpleMessage("OK"),
@@ -110,8 +115,8 @@ class MessageLookup extends MessageLookupByLibrary {
         "vitamins": MessageLookupByLibrary.simpleMessage("Vitamins"),
         "warningExpirationSoon": MessageLookupByLibrary.simpleMessage(
             "This medication will expire soon!"),
-        "warningPillsLow": MessageLookupByLibrary.simpleMessage(
-            "Pills are running low!"),
+        "warningPillsLow":
+            MessageLookupByLibrary.simpleMessage("Pills are running low!"),
         "weekly": MessageLookupByLibrary.simpleMessage("Weekly")
       };
 }

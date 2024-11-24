@@ -63,6 +63,9 @@
     "antibiotic": "مضاد حيوي",
     "vitamins": "فيتامينات",
     "noName": " اسم",
+    "medicationOfTheDay": "أدوية اليوم"
+,"noPillsForToday": "لايوجد أدويه لأخذها اليوم",
+"noMedicationsAdded": "لم يتم إضافة أي أدوية",
     "medicationsOverview": "نظرة عامة على الأدوية",
         "noMedicationsForThisDay": "لا يوجد أدوية لهذا اليوم",
         "@noMedicationsForThisDay": {

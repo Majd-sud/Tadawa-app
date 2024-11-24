@@ -308,7 +308,7 @@ class _MainScreenState extends State<MainScreen> {
         child: Scaffold(
           appBar: AppBar(
             backgroundColor: const Color.fromRGBO(255, 254, 247, 255),
-            title: Text(S.of(context).noName),
+            title: Text(S.of(context).pillsSchedule),
           ),
           body: Column(
             children: [
@@ -331,7 +331,7 @@ class _MainScreenState extends State<MainScreen> {
         ),
         const SizedBox(height: 20),
         Text(
-          S.of(context).noName, // Use localized text
+          S.of(context).noPillsForToday, // Use localized text
           style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
         ),
       ]);

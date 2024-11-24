@@ -143,9 +143,10 @@ class _MedicationScreenState extends State<MedicationScreen> {
                     height: 300,
                   ),
                   const SizedBox(height: 20),
-                  const Text(
-                    'No medications added',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  Text(
+                    (S.of(context).noMedicationsAdded),
+                    style: const TextStyle(
+                        fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                 ],
               ),

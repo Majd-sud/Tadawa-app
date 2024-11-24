@@ -490,6 +490,35 @@ class S {
     );
   }
 
+  /// `No pills for today`
+  String get noPillsForToday {
+    return Intl.message(
+      'No pills for today',
+      name: 'noPillsForToday',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Pill Schedule`
+  String get pillsSchedule {
+    return Intl.message(
+      'Pills Schedule',
+      name: 'pillsSchedule',
+      desc: '',
+      args: [],
+    );
+  }
+
+  String get noMedicationsAdded {
+    return Intl.message(
+      'No medications added',
+      name: 'noMedicationsAdded',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Weekly`
   String get weekly {
     return Intl.message(
