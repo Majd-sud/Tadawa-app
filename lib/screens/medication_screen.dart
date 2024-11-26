@@ -43,14 +43,17 @@ class _MedicationScreenState extends State<MedicationScreen> {
             endDate: _parseDate(data['endDate']),
             expirationDate: _parseDate(data['expirationDate']),
             notes: data['notes'] ?? '',
-            pillsCount: data['pillsCount'] is int ? data['pillsCount'] : 0,  // Ensure it's an int
+            pillsCount: data['pillsCount'] is int
+                ? data['pillsCount']
+                : 0, // Ensure it's an int
             time: data['time'] != null
                 ? _parseTime(data['time'])
                 : const TimeOfDay(hour: 12, minute: 0),
             frequency: data['frequency'] ?? '',
             schedule: data['schedule'] ?? '',
             photoUrl: data['photoUrl'] ?? '',
-            medicationType: data['type'] ?? '', // Assuming the field in Firestore is named 'type'
+            medicationType: data['type'] ??
+                '', // Assuming the field in Firestore is named 'type'
           );
         }).toList();
       });
@@ -234,7 +237,8 @@ class _MedicationScreenState extends State<MedicationScreen> {
                                     ? Colors.black
                                     : Colors.white),
                           ),
-                          if (medication.pillsCount < 5 && medication.medicationType == 'Pills')
+                          if (medication.pillsCount < 5 &&
+                              medication.medicationType == 'Pills')
                             Padding(
                               padding: const EdgeInsets.only(top: 8.0),
                               child: Row(
@@ -276,6 +280,31 @@ class _MedicationScreenState extends State<MedicationScreen> {
                                       S.of(context).warningExpirationSoon,
                                       style: const TextStyle(
                                         color: Color.fromARGB(186, 255, 72, 0),
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          // Warning message for already expired medications
+                          if (medication.isExpired())
+                            Padding(
+                              padding: const EdgeInsets.only(top: 8.0),
+                              child: Row(
+                                children: [
+                                  Icon(
+                                    Icons.warning,
+                                    color: Colors.red,
+                                    size: 20,
+                                  ),
+                                  const SizedBox(width: 4),
+                                  Expanded(
+                                    child: const Text(
+                                      'This medication has expired. Please dispose of it safely!',
+                                      style: TextStyle(
+                                        color: Colors.red,
                                         fontSize: 14,
                                         fontWeight: FontWeight.bold,
                                       ),

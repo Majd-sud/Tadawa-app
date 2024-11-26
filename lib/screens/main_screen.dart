@@ -82,6 +82,9 @@ class _MainScreenState extends State<MainScreen> {
             .isBefore(DateTime.now().add(Duration(days: 7))) &&
         !medication.isExpired());
 
+    bool hasExpiredMedications =
+        _medications.any((medication) => medication.isExpired());
+
     bool hasLowPills = _hasLowPills();
 
     if (hasExpiringMedications) {
@@ -89,16 +92,23 @@ class _MainScreenState extends State<MainScreen> {
           Colors.orange, Icons.warning);
     }
 
-   if (hasLowPills) {
-     if (_medications.any((medication) =>
-      medication.medicationType == 'Pills' && medication.pillsCount < 5)) {
+    if (hasExpiredMedications) {
       _addSnackBar(
-      'You have medications with less than 5 pills left!',
-      Colors.red,
-      Icons.warning,
-    );
-  }
-}
+          'You have medications that have expired. Please dispose of them safely!',
+          Colors.red,
+          Icons.warning);
+    }
+
+    if (hasLowPills) {
+      if (_medications.any((medication) =>
+          medication.medicationType == 'Pills' && medication.pillsCount < 5)) {
+        _addSnackBar(
+          'You have medications with less than 5 pills left!',
+          Colors.red,
+          Icons.warning,
+        );
+      }
+    }
   }
 
   void _addSnackBar(String message, Color backgroundColor, IconData icon) {
@@ -119,7 +129,7 @@ class _MainScreenState extends State<MainScreen> {
         ],
       ),
       backgroundColor: backgroundColor,
-      duration: const Duration(seconds: 1),
+      duration: const Duration(seconds: 2),
       behavior: SnackBarBehavior.floating,
     );
 
@@ -139,7 +149,7 @@ class _MainScreenState extends State<MainScreen> {
   }
 
   bool _hasLowPills() {
-    return _medications.any((medication) => medication.pillsCount < 5 );
+    return _medications.any((medication) => medication.pillsCount < 5);
   }
 
   Future<void> _scheduleNotifications() async {
@@ -183,34 +193,55 @@ class _MainScreenState extends State<MainScreen> {
   }
 
   Future<void> _scheduleExpiryNotification(Medication medication) async {
-    final tz.TZDateTime localDateTime =
+    final tz.TZDateTime expirationDate =
         tz.TZDateTime.from(medication.expirationDate, tz.local);
 
     // Ensure the scheduled date is in the future
-    if (localDateTime.isBefore(tz.TZDateTime.now(tz.local))) {
-      return; // Skip if the medication is already expired
-    }
-
-    await NotificationService.flutterLocalNotificationsPlugin.zonedSchedule(
-      medication.id.hashCode ^ medication.expirationDate.millisecondsSinceEpoch,
-      'Medication Expiry Alert',
-      'Your medication "${medication.name}" is about to expire!',
-      localDateTime.subtract(Duration(days: 1)), //
-      const NotificationDetails(
-        android: AndroidNotificationDetails(
-          'medication_channel',
-          'Medication Expiry Alerts',
-          channelDescription: 'Channel for medication expiry alerts',
-          importance: Importance.max,
-          priority: Priority.high,
+    if (expirationDate.isBefore(tz.TZDateTime.now(tz.local))) {
+      await NotificationService.flutterLocalNotificationsPlugin.zonedSchedule(
+        medication.id.hashCode ^ expirationDate.millisecondsSinceEpoch,
+        'Medication Expired',
+        'Your medication "${medication.name}" has expired. Please dispose of it safely!',
+        expirationDate,
+        const NotificationDetails(
+          android: AndroidNotificationDetails(
+            'medication_channel',
+            'Medication Expired Alerts',
+            channelDescription: 'Channel for medication expiry alerts',
+            importance: Importance.max,
+            priority: Priority.high,
+          ),
         ),
-      ),
-      androidScheduleMode: AndroidScheduleMode.exact,
-      uiLocalNotificationDateInterpretation:
-          UILocalNotificationDateInterpretation.absoluteTime,
-    );
+        androidScheduleMode: AndroidScheduleMode.exact,
+        uiLocalNotificationDateInterpretation:
+            UILocalNotificationDateInterpretation.absoluteTime,
+      );
+    } else {
+      // Schedule a notification 7 days before expiration
+      final tz.TZDateTime warningDate =
+          expirationDate.subtract(Duration(days: 7));
+      if (warningDate.isAfter(tz.TZDateTime.now(tz.local))) {
+        await NotificationService.flutterLocalNotificationsPlugin.zonedSchedule(
+          medication.id.hashCode ^ warningDate.millisecondsSinceEpoch,
+          'Medication Expiry Alert',
+          'Your medication "${medication.name}" is about to expire in 7 days!',
+          warningDate,
+          const NotificationDetails(
+            android: AndroidNotificationDetails(
+              'medication_channel',
+              'Medication Expiry Alerts',
+              channelDescription: 'Channel for medication expiry alerts',
+              importance: Importance.max,
+              priority: Priority.high,
+            ),
+          ),
+          androidScheduleMode: AndroidScheduleMode.exact,
+          uiLocalNotificationDateInterpretation:
+              UILocalNotificationDateInterpretation.absoluteTime,
+        );
+      }
+    }
   }
-
   Future<void> _scheduleNotification(
       Medication medication, tz.TZDateTime localDateTime) async {
     int notificationId =
@@ -396,7 +427,7 @@ class _MainScreenState extends State<MainScreen> {
                           medication.pillsCount -= 1;
                           _updatePillsCount(medication, medication.pillsCount);
                         }
-                        if (value == false ) {
+                        if (value == false) {
                           medication.pillsCount += 1;
                           _updatePillsCount(medication, medication.pillsCount);
                         }
