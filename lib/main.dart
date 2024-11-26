@@ -12,6 +12,7 @@ import 'package:timezone/data/latest.dart' as tz;
 import 'package:permission_handler/permission_handler.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:tadawa_app/generated/l10n.dart';
+import 'package:tadawa_app/locale_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -27,6 +28,8 @@ void main() async {
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (context) => ThemeProvidor()),
+        ChangeNotifierProvider(
+            create: (context) => LocaleProvider()), // Add LocaleProvider
       ],
       child: const MyApp(),
     ),

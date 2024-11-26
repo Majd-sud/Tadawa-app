@@ -76,7 +76,6 @@ class _MainScreenState extends State<MainScreen> {
   }
 
   void _checkForWarnings() {
-    
     bool hasExpiringMedications = _medications.any((medication) =>
         medication.expirationDate
             .isBefore(DateTime.now().add(Duration(days: 7))) &&
@@ -242,6 +241,7 @@ class _MainScreenState extends State<MainScreen> {
       }
     }
   }
+
   Future<void> _scheduleNotification(
       Medication medication, tz.TZDateTime localDateTime) async {
     int notificationId =
@@ -404,7 +404,7 @@ class _MainScreenState extends State<MainScreen> {
                             : Colors.white),
                   ),
                   subtitle: Text(
-                    'Time: ${medication.time.format(context)}',
+                    '${S.of(context).time}: ${medication.time.format(context)}',
                     style: TextStyle(
                         color: value.themeData == lightMode
                             ? Colors.black
@@ -421,7 +421,6 @@ class _MainScreenState extends State<MainScreen> {
                     value: medication.takenStatus[_selectedDate] ?? false,
                     onChanged: (value) {
                       setState(() {
-                        
                         medication.takenStatus[_selectedDate] = value ?? false;
                         if (value == true && medication.pillsCount > 0) {
                           medication.pillsCount -= 1;

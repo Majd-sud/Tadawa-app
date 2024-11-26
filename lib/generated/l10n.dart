@@ -493,7 +493,7 @@ class S {
   /// `No pills for today`
   String get noPillsForToday {
     return Intl.message(
-      'No pills for today',
+      'No Medications for today',
       name: 'noPillsForToday',
       desc: '',
       args: [],
@@ -503,7 +503,7 @@ class S {
   /// `Pill Schedule`
   String get pillsSchedule {
     return Intl.message(
-      'Pills Schedule',
+      'Medications Schedule',
       name: 'pillsSchedule',
       desc: '',
       args: [],

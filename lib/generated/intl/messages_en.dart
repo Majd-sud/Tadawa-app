@@ -69,7 +69,7 @@ class MessageLookup extends MessageLookupByLibrary {
         "medicationName":
             MessageLookupByLibrary.simpleMessage("Medication Name"),
         "noPillsForToday":
-            MessageLookupByLibrary.simpleMessage("No pills for today"),
+            MessageLookupByLibrary.simpleMessage("No Medications for today"),
         "medications": MessageLookupByLibrary.simpleMessage("Medications"),
         "meeting": MessageLookupByLibrary.simpleMessage("Meeting"),
         "monthly": MessageLookupByLibrary.simpleMessage("Monthly"),
@@ -79,7 +79,8 @@ class MessageLookup extends MessageLookupByLibrary {
         "notification": MessageLookupByLibrary.simpleMessage("Notification"),
         "notificationInstructions": MessageLookupByLibrary.simpleMessage(
             "Please make sure to open:\nSettings > Apps > Tadawa App > Notifications > Allow"),
-        "pillsSchedule": MessageLookupByLibrary.simpleMessage("Pill Schedule"),
+        "pillsSchedule":
+            MessageLookupByLibrary.simpleMessage("Medications Schedule"),
         "noMedicationsAdded":
             MessageLookupByLibrary.simpleMessage("no medications added"),
         "notificationSettings":

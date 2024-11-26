@@ -7,6 +7,7 @@ import 'package:tadawa_app/screens/auth_screen.dart';
 import 'package:tadawa_app/screens/profile_screen.dart';
 import 'package:tadawa_app/theme.dart';
 import '../theme_providor.dart';
+import '../locale_provider.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -147,9 +148,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     _buildSettingsListTile(
                       icon: Icons.language,
                       title: S.of(context).language,
-                      subtitle: _currentLocale?.languageCode == 'en'
-                          ? 'English'
-                          : 'العربية',
+                      subtitle:
+                          context.watch<LocaleProvider>().locale.languageCode ==
+                                  'en'
+                              ? 'English'
+                              : 'العربية',
                       iconColor: const Color.fromARGB(255, 134, 134, 134),
                       onTap: () {
                         _showLanguageDialog(context);
@@ -177,26 +180,30 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   void _showLanguageDialog(BuildContext context) {
+    final localeProvider = context.read<LocaleProvider>();
+
     showDialog(
       context: context,
-      builder: (context) {
+      builder: (_) {
         return AlertDialog(
           title: Text(S.of(context).language),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               ListTile(
-                title: const Text('English'),
+                title: Text('English'),
                 onTap: () {
-                  _changeLanguage(const Locale('en'));
-                  Navigator.of(context).pop(); // Close the dialog
+                  localeProvider.setLocale(const Locale('en'));
+                  S.load(const Locale('en')); // Reload localization strings
+                  Navigator.of(context).pop();
                 },
               ),
               ListTile(
-                title: const Text('العربية'),
+                title: Text('العربية'),
                 onTap: () {
-                  _changeLanguage(const Locale('ar'));
-                  Navigator.of(context).pop(); // Close the dialog
+                  localeProvider.setLocale(const Locale('ar'));
+                  S.load(const Locale('ar')); // Reload localization strings
+                  Navigator.of(context).pop();
                 },
               ),
             ],
