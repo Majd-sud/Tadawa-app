@@ -62,7 +62,7 @@ class Medication {
       expirationDate: parseDate(data['expirationDate']),
       notes: data['notes'] ?? '',
       pillsCount: data['pillsCount'] ?? 0,
-      medicationType: data['medicationType'] ?? 'pills', // Default type if not provided
+      medicationType: data['medicationType'] ?? 'Pills', 
       time: _parseTime(data['time']),
       frequency: data['frequency'] ?? '',
       schedule: data['schedule'] ?? '',

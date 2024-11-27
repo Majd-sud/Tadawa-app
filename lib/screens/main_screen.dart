@@ -84,7 +84,9 @@ class _MainScreenState extends State<MainScreen> {
     bool hasExpiredMedications =
         _medications.any((medication) => medication.isExpired());
 
-    bool hasLowPills = _hasLowPills();
+    bool hasLowPills = _medications.any((medication) =>
+        medication.pillsCount > 0 && medication.pillsCount < 5);
+ 
 
     if (hasExpiringMedications) {
       _addSnackBar('You have medications expiring within the next week!',
@@ -99,14 +101,11 @@ class _MainScreenState extends State<MainScreen> {
     }
 
     if (hasLowPills) {
-      if (_medications.any((medication) =>
-          medication.medicationType == 'Pills' && medication.pillsCount < 5)) {
-        _addSnackBar(
-          'You have medications with less than 5 pills left!',
-          Colors.red,
-          Icons.warning,
-        );
-      }
+      _addSnackBar(
+        'You have medications with less than 5 pills left!',
+        Colors.red,
+        Icons.warning,
+      );
     }
   }
 
@@ -145,10 +144,6 @@ class _MainScreenState extends State<MainScreen> {
         _showNextSnackBar();
       });
     }
-  }
-
-  bool _hasLowPills() {
-    return _medications.any((medication) => medication.pillsCount < 5);
   }
 
   Future<void> _scheduleNotifications() async {

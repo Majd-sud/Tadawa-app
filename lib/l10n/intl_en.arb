@@ -1,5 +1,5 @@
 {
-  "title": "Settings",
+  "Settings": "Settings",
   "preferences": "Preferences",
   "appearance": "Appearance",
   "language": "Language",
@@ -33,6 +33,9 @@
   "startDate": "Start Date",
   "endDate": "End Date",
   "time": "Time",
+  "type":"Type",
+  "Pills":"pills",
+  "Syrup":"Syrup",
   "warningPillsLow": "Pills are running low!",
   "warningExpirationSoon": "This medication will expire soon!",
   "errorFetchingMedications": "Error fetching medications.",

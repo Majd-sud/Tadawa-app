@@ -30,8 +30,8 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
   int _pillsCount = 1;
   String? _selectedSchedule;
   String? _imagePath;
-  String _medicationType = 'Pills';  // Default to 'Pills' or 'Syrup'
-  //String get medicationType => _medicationType;  // ممكن ماله داعي  
+  String _medicationType = 'Pills';  
+  String get medicationType => _medicationType;  
 
 
   @override
@@ -49,16 +49,19 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
       _pillsController.text = _pillsCount.toString();
       _selectedSchedule = widget.medication!.frequency;
       _imagePath = widget.medication!.photoUrl;
-      _medicationType = _pillsCount > 0 ? 'Pills' : 'Syrup';
+      _medicationType = widget.medication?.medicationType ?? 'Pills';
       
     }
   }
+  // Handle null case
   void _selectMedicationType(String? type) {
-  if (type == null) return; // Handle null case
+  if (type == null) return; 
   setState(() {
+
     _medicationType = type;
+
     if (type == 'Syrup') {
-      _pillsCount = 0; // Reset pill count if it's Syrup
+      _pillsCount = 0; 
     }
   });
 }
@@ -168,7 +171,7 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
           'time': medication.time.format(context),
           'frequency': medication.frequency,
           'photoUrl': medication.photoUrl,
-          'type': medication.medicationType, // Save the type of medication
+          'type': medication.medicationType, 
 
         });
       } else {
@@ -188,7 +191,7 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
           'time': medication.time.format(context),
           'frequency': medication.frequency,
           'photoUrl': medication.photoUrl,
-         'type': medication.medicationType, // Save the type of medication
+          'type': medication.medicationType, 
 
         });
       }

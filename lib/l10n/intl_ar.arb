@@ -1,5 +1,5 @@
 {
-    "title": "الإعدادات",
+    "Settings": "الإعدادات",
     "preferences": "التفضيلات",
     "appearance": "المظهر",
     "language": "اللغة",
@@ -33,6 +33,9 @@
     "startDate": "تاريخ البدء",
     "endDate": "تاريخ الانتهاء",
     "time": "الوقت",
+    "type":"النوع",
+    "Pills":"حبوب",
+    "Syrup":"شراب",
     "warningPillsLow": "تحذير: الأدوية على وشك النفاد!",
     "warningExpirationSoon": "تحذير: ستنتهي صلاحية هذا الدواء قريبًا!",
     "errorFetchingMedications": "خطأ في جلب الأدوية.",
